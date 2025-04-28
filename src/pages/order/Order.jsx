@@ -58,7 +58,7 @@ const orders = [
     },
 ]
 
-function OrdersPage() {
+function Order() {
     const [searchQuery, setSearchQuery] = useState("")
     const [selectedStatus, setSelectedStatus] = useState("")
     const [viewOrderDetails, setViewOrderDetails] = useState(null)
@@ -308,4 +308,4 @@ function OrdersPage() {
     )
 }
 
-export default OrdersPage
+export default Order

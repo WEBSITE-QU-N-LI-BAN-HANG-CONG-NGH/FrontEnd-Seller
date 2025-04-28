@@ -1,6 +1,8 @@
 import "../../styles/layout/layout.css"
 import { useLocation } from 'react-router-dom';
 import { useState } from 'react';
+import { Link } from 'react-router-dom'
+import { LayoutDashboard, Package, ShoppingCart, User, LogOut, Menu } from 'lucide-react'
 
 function DashboardLayout({ children }) {
     const location = useLocation()

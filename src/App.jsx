@@ -20,7 +20,7 @@ function App() {
                     }
                 />
                 <Route
-                    path="/products"
+                    path="/dashboard/products"
                     element={
                         <DashboardLayout>
                             <Product />
@@ -28,7 +28,7 @@ function App() {
                     }
                 />
                 <Route
-                    path="products/add"
+                    path="/dashboard/products/add"
                     element={
                         <DashboardLayout>
                             <AddProduct />
@@ -36,7 +36,7 @@ function App() {
                     }
                 />
                 <Route
-                    path="orders"
+                    path="/dashboard/orders"
                     element={
                         <DashboardLayout>
                             <Order />
@@ -44,14 +44,14 @@ function App() {
                     }
                 />
                 <Route
-                    path="profile"
+                    path="/dashboard/profile"
                     element={
                         <DashboardLayout>
                             <Profile />
                         </DashboardLayout>
                     }
                 />
-                <Route path="*" element={<Navigate to="/" replace />} />
+                <Route path="/" element={<Navigate to="/dashboard" replace />} />
             </Routes>
         </Router>
     )

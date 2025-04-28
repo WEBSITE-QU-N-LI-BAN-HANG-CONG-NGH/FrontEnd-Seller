@@ -54,7 +54,7 @@ const products = [
     },
 ]
 
-function ProductsPage() {
+function Product() {
     const navigate = useNavigate()
     const [searchQuery, setSearchQuery] = useState("")
     const [dropdownOpen, setDropdownOpen] = useState(null)
@@ -210,4 +210,4 @@ function ProductsPage() {
     )
 }
 
-export default ProductsPage
+export default Product
