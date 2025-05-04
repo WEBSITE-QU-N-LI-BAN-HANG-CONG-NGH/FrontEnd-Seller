@@ -1,105 +1,152 @@
-"use client"
-
-import { useState } from "react"
-import { Calendar, Download, Eye, Filter, MoreHorizontal, Search, X } from "lucide-react"
-import "../../styles/order/order.css"
-
-// Sample order data
-const orders = [
-    {
-        id: "ORD-2023-1001",
-        customer: "Nguyễn Văn A",
-        date: "15/03/2023",
-        total: 29990000,
-        status: "Đã giao hàng",
-        items: 2,
-        payment: "Thanh toán khi nhận hàng",
-        address: "123 Đường Lê Lợi, Quận 1, TP.HCM",
-    },
-    {
-        id: "ORD-2023-1002",
-        customer: "Trần Thị B",
-        date: "14/03/2023",
-        total: 8990000,
-        status: "Đang giao hàng",
-        items: 1,
-        payment: "Chuyển khoản ngân hàng",
-        address: "456 Đường Nguyễn Huệ, Quận 1, TP.HCM",
-    },
-    {
-        id: "ORD-2023-1003",
-        customer: "Lê Văn C",
-        date: "13/03/2023",
-        total: 12500000,
-        status: "Đang xử lý",
-        items: 3,
-        payment: "Ví điện tử MoMo",
-        address: "789 Đường Cách Mạng Tháng 8, Quận 3, TP.HCM",
-    },
-    {
-        id: "ORD-2023-1004",
-        customer: "Phạm Thị D",
-        date: "12/03/2023",
-        total: 4990000,
-        status: "Đã hủy",
-        items: 1,
-        payment: "Thẻ tín dụng",
-        address: "101 Đường Hai Bà Trưng, Quận 1, TP.HCM",
-    },
-    {
-        id: "ORD-2023-1005",
-        customer: "Hoàng Văn E",
-        date: "11/03/2023",
-        total: 35500000,
-        status: "Đã giao hàng",
-        items: 4,
-        payment: "Thanh toán khi nhận hàng",
-        address: "202 Đường Võ Văn Tần, Quận 3, TP.HCM",
-    },
-]
+// src/pages/order/Order.jsx
+import { useState, useEffect } from "react";
+import { Calendar, Download, Eye, Filter, MoreHorizontal, Search, X } from "lucide-react";
+import "../../styles/order/order.css";
+import useOrder from "../../hooks/useOrder";
+import { formatCurrency, formatDate } from "../../utils/formatters";
+import LoadingSpinner from "../../components/common/LoadingSpinner";
+import ErrorAlert from "../../components/common/ErrorAlert";
+import OrderDetailModal from "../../components/feature/OrderDetailModal";
 
 function Order() {
-    const [searchQuery, setSearchQuery] = useState("")
-    const [selectedStatus, setSelectedStatus] = useState("")
-    const [viewOrderDetails, setViewOrderDetails] = useState(null)
-    const [filterDropdownOpen, setFilterDropdownOpen] = useState(false)
-    const [dropdownOpen, setDropdownOpen] = useState(null)
+    const [searchQuery, setSearchQuery] = useState("");
+    const [selectedStatus, setSelectedStatus] = useState("");
+    const [viewOrderDetails, setViewOrderDetails] = useState(null);
+    const [filterDropdownOpen, setFilterDropdownOpen] = useState(false);
+    const [dropdownOpen, setDropdownOpen] = useState(null);
+    const [currentPage, setCurrentPage] = useState(0);
+    const [pageSize] = useState(10);
 
-    const filteredOrders = orders.filter((order) => {
-        const matchesSearch =
-            order.id.toLowerCase().includes(searchQuery.toLowerCase()) ||
-            order.customer.toLowerCase().includes(searchQuery.toLowerCase())
+    const {
+        orders,
+        fetchOrders,
+        fetchOrderDetail,
+        updateOrderStatus,
+        pagination,
+        loading,
+        error,
+        resetState
+    } = useOrder();
 
-        const matchesStatus = selectedStatus === "" || order.status === selectedStatus
+    // Lấy danh sách đơn hàng khi component mount hoặc khi filter thay đổi
+    useEffect(() => {
+        const fetchData = async () => {
+            try {
+                await fetchOrders({
+                    page: currentPage,
+                    size: pageSize,
+                    status: selectedStatus || undefined,
+                    search: searchQuery || undefined
+                });
+            } catch (err) {
+                console.error("Lỗi khi lấy danh sách đơn hàng:", err);
+            }
+        };
 
-        return matchesSearch && matchesStatus
-    })
+        fetchData();
+    }, [fetchOrders, currentPage, pageSize, selectedStatus, searchQuery]);
 
-    const toggleDropdown = (orderId) => {
-        if (dropdownOpen === orderId) {
-            setDropdownOpen(null)
-        } else {
-            setDropdownOpen(orderId)
+    // Hiển thị chi tiết đơn hàng
+    const handleViewOrderDetail = async (orderId) => {
+        try {
+            const orderDetail = await fetchOrderDetail(orderId);
+            setViewOrderDetails(orderDetail);
+        } catch (err) {
+            console.error("Lỗi khi lấy chi tiết đơn hàng:", err);
         }
-    }
+    };
 
+    // Đóng modal chi tiết đơn hàng
+    const handleCloseModal = () => {
+        setViewOrderDetails(null);
+    };
+
+    // Mở/đóng dropdown
+    const toggleDropdown = (e, orderId) => {
+        e.stopPropagation();
+        if (dropdownOpen === orderId) {
+            setDropdownOpen(null);
+        } else {
+            setDropdownOpen(orderId);
+        }
+    };
+
+    // Mở/đóng dropdown filter
     const toggleFilterDropdown = () => {
-        setFilterDropdownOpen(!filterDropdownOpen)
-    }
+        setFilterDropdownOpen(!filterDropdownOpen);
+    };
 
+    // Xử lý thay đổi trạng thái đơn hàng
+    const handleStatusChange = async (orderId, newStatus) => {
+        try {
+            await updateOrderStatus(orderId, newStatus);
+
+            // Nếu đang xem chi tiết đơn hàng này, cập nhật lại thông tin
+            if (viewOrderDetails && viewOrderDetails.id === orderId) {
+                const updatedOrder = await fetchOrderDetail(orderId);
+                setViewOrderDetails(updatedOrder);
+            }
+
+            setDropdownOpen(null);
+        } catch (err) {
+            console.error("Lỗi khi cập nhật trạng thái đơn hàng:", err);
+        }
+    };
+
+    // Lấy class CSS cho badge trạng thái đơn hàng
     const getStatusClass = (status) => {
         switch (status) {
-            case "Đã giao hàng":
-                return "success"
-            case "Đang giao hàng":
-                return "warning"
-            case "Đang xử lý":
-                return "default"
-            case "Đã hủy":
-                return "danger"
+            case "DELIVERED":
+                return "success";
+            case "SHIPPED":
+                return "warning";
+            case "CONFIRMED":
+            case "PENDING":
+                return "default";
+            case "CANCELLED":
+                return "danger";
             default:
-                return "default"
+                return "default";
         }
+    };
+
+    // Chuyển đổi mã trạng thái thành chữ tiếng Việt
+    const translateStatus = (status) => {
+        switch (status) {
+            case "DELIVERED":
+                return "Đã giao hàng";
+            case "SHIPPED":
+                return "Đang giao hàng";
+            case "CONFIRMED":
+                return "Đã xác nhận";
+            case "PENDING":
+                return "Chờ xác nhận";
+            case "CANCELLED":
+                return "Đã hủy";
+            default:
+                return status;
+        }
+    };
+
+    // Xử lý phân trang
+    const handleNextPage = () => {
+        if (pagination && currentPage < pagination.totalPages - 1) {
+            setCurrentPage(currentPage + 1);
+        }
+    };
+
+    const handlePrevPage = () => {
+        if (currentPage > 0) {
+            setCurrentPage(currentPage - 1);
+        }
+    };
+
+    if (loading && orders.length === 0) {
+        return <LoadingSpinner />;
+    }
+
+    if (error) {
+        return <ErrorAlert message={error} onDismiss={resetState} />;
     }
 
     return (
@@ -113,6 +160,7 @@ function Order() {
                     <h2 className="card-title">Danh sách đơn hàng</h2>
                     <p className="card-description">Quản lý và theo dõi tất cả đơn hàng của cửa hàng</p>
                 </div>
+                // src/pages/order/Order.jsx (tiếp tục)
                 <div className="card-content">
                     <div className="filters">
                         <div className="search-container">
@@ -142,10 +190,11 @@ function Order() {
                                             onChange={(e) => setSelectedStatus(e.target.value)}
                                         >
                                             <option value="">Tất cả trạng thái</option>
-                                            <option value="Đã giao hàng">Đã giao hàng</option>
-                                            <option value="Đang giao hàng">Đang giao hàng</option>
-                                            <option value="Đang xử lý">Đang xử lý</option>
-                                            <option value="Đã hủy">Đã hủy</option>
+                                            <option value="DELIVERED">Đã giao hàng</option>
+                                            <option value="SHIPPED">Đang giao hàng</option>
+                                            <option value="CONFIRMED">Đã xác nhận</option>
+                                            <option value="PENDING">Chờ xác nhận</option>
+                                            <option value="CANCELLED">Đã hủy</option>
                                         </select>
                                         {selectedStatus && (
                                             <button className="button ghost small" onClick={() => setSelectedStatus("")}>
@@ -180,30 +229,29 @@ function Order() {
                             </tr>
                             </thead>
                             <tbody>
-                            {filteredOrders.length === 0 ? (
+                            {orders.length === 0 ? (
                                 <tr>
                                     <td colSpan={6} className="empty-table">
                                         Không tìm thấy đơn hàng nào
                                     </td>
                                 </tr>
                             ) : (
-                                filteredOrders.map((order) => (
+                                orders.map((order) => (
                                     <tr key={order.id}>
-                                        <td className="id-cell">{order.id}</td>
-                                        <td>{order.customer}</td>
-                                        <td>{order.date}</td>
-                                        <td className="price-cell">{order.total.toLocaleString("vi-VN")} ₫</td>
+                                        <td className="id-cell">OD-{order.id}</td>
+                                        <td>{order.user ? `${order.user.firstName} ${order.user.lastName}` : 'Khách hàng'}</td>
+                                        <td>{formatDate(order.orderDate)}</td>
+                                        <td className="price-cell">{formatCurrency(order.totalDiscountedPrice)}</td>
                                         <td className="status-cell">
-                                            <span className={`status-badge ${getStatusClass(order.status)}`}>{order.status}</span>
+                                            <span className={`status-badge ${getStatusClass(order.orderStatus)}`}>
+                                                {translateStatus(order.orderStatus)}
+                                            </span>
                                         </td>
                                         <td className="actions-cell">
                                             <div className="dropdown">
                                                 <button
                                                     className="button icon-only ghost"
-                                                    onClick={(e) => {
-                                                        e.stopPropagation()
-                                                        toggleDropdown(order.id)
-                                                    }}
+                                                    onClick={(e) => toggleDropdown(e, order.id)}
                                                 >
                                                     <MoreHorizontal className="icon-small" />
                                                     <span className="sr-only">Mở menu</span>
@@ -212,14 +260,56 @@ function Order() {
                                                     <div className="dropdown-menu">
                                                         <div className="dropdown-header">Thao tác</div>
                                                         <div className="dropdown-divider"></div>
-                                                        <button className="dropdown-item" onClick={() => setViewOrderDetails(order)}>
+                                                        <button
+                                                            className="dropdown-item"
+                                                            onClick={() => handleViewOrderDetail(order.id)}
+                                                        >
                                                             <Eye className="icon-small" />
                                                             Xem chi tiết
                                                         </button>
-                                                        <button className="dropdown-item">
-                                                            <Download className="icon-small" />
-                                                            Xuất hóa đơn
-                                                        </button>
+                                                        <div className="dropdown-divider"></div>
+                                                        <div className="dropdown-header">Thay đổi trạng thái</div>
+                                                        <div className="dropdown-divider"></div>
+                                                        {order.orderStatus !== "PENDING" && (
+                                                            <button
+                                                                className="dropdown-item"
+                                                                onClick={() => handleStatusChange(order.id, "PENDING")}
+                                                            >
+                                                                Chờ xác nhận
+                                                            </button>
+                                                        )}
+                                                        {order.orderStatus !== "CONFIRMED" && (
+                                                            <button
+                                                                className="dropdown-item"
+                                                                onClick={() => handleStatusChange(order.id, "CONFIRMED")}
+                                                            >
+                                                                Đã xác nhận
+                                                            </button>
+                                                        )}
+                                                        {order.orderStatus !== "SHIPPED" && (
+                                                            <button
+                                                                className="dropdown-item"
+                                                                onClick={() => handleStatusChange(order.id, "SHIPPED")}
+                                                            >
+                                                                Đang giao hàng
+                                                            </button>
+                                                        )}
+                                                        {order.orderStatus !== "DELIVERED" && (
+                                                            <button
+                                                                className="dropdown-item"
+                                                                onClick={() => handleStatusChange(order.id, "DELIVERED")}
+                                                            >
+                                                                Đã giao hàng
+                                                            </button>
+                                                        )}
+                                                        {order.orderStatus !== "CANCELLED" && (
+                                                            <button
+                                                                className="dropdown-item danger"
+                                                                onClick={() => handleStatusChange(order.id, "CANCELLED")}
+                                                            >
+                                                                Hủy đơn hàng
+                                                            </button>
+                                                        )}
                                                     </div>
                                                 )}
                                             </div>
@@ -232,80 +322,37 @@ function Order() {
                     </div>
 
                     <div className="pagination">
-                        <button className="button outline small" disabled>
+                        <button
+                            className="button outline small"
+                            onClick={handlePrevPage}
+                            disabled={currentPage === 0}
+                        >
                             Trước
                         </button>
-                        <button className="button outline small active">1</button>
-                        <button className="button outline small">Sau</button>
+                        <span className="pagination-info">
+                            Trang {currentPage + 1} / {pagination?.totalPages || 1}
+                        </span>
+                        <button
+                            className="button outline small"
+                            onClick={handleNextPage}
+                            disabled={!pagination || currentPage >= pagination.totalPages - 1}
+                        >
+                            Sau
+                        </button>
                     </div>
                 </div>
             </div>
 
             {/* Order Details Modal */}
             {viewOrderDetails && (
-                <div className="modal-overlay" onClick={() => setViewOrderDetails(null)}>
-                    <div className="modal-content" onClick={(e) => e.stopPropagation()}>
-                        <div className="modal-header">
-                            <h2 className="modal-title">Chi tiết đơn hàng {viewOrderDetails.id}</h2>
-                            <p className="modal-description">Thông tin chi tiết về đơn hàng</p>
-                        </div>
-                        <div className="modal-body">
-                            <div className="order-info-grid">
-                                <div className="order-info-section">
-                                    <h3 className="section-title">Thông tin khách hàng</h3>
-                                    <p className="section-text">{viewOrderDetails.customer}</p>
-                                </div>
-                                <div className="order-info-section">
-                                    <h3 className="section-title">Ngày đặt hàng</h3>
-                                    <p className="section-text">{viewOrderDetails.date}</p>
-                                </div>
-                            </div>
-
-                            <div className="divider"></div>
-
-                            <div className="order-info-section">
-                                <h3 className="section-title">Địa chỉ giao hàng</h3>
-                                <p className="section-text">{viewOrderDetails.address}</p>
-                            </div>
-
-                            <div className="order-info-section">
-                                <h3 className="section-title">Phương thức thanh toán</h3>
-                                <p className="section-text">{viewOrderDetails.payment}</p>
-                            </div>
-
-                            <div className="divider"></div>
-
-                            <div className="order-info-section">
-                                <h3 className="section-title">Trạng thái đơn hàng</h3>
-                                <span className={`status-badge ${getStatusClass(viewOrderDetails.status)}`}>
-                  {viewOrderDetails.status}
-                </span>
-                            </div>
-
-                            <div className="order-info-section">
-                                <h3 className="section-title">Tổng quan đơn hàng</h3>
-                                <div className="order-summary">
-                                    <div className="summary-row">
-                                        <span>Số lượng sản phẩm:</span>
-                                        <span>{viewOrderDetails.items}</span>
-                                    </div>
-                                    <div className="summary-row total">
-                                        <span>Tổng tiền:</span>
-                                        <span>{viewOrderDetails.total.toLocaleString("vi-VN")} ₫</span>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                        <div className="modal-footer">
-                            <button className="button outline" onClick={() => setViewOrderDetails(null)}>
-                                Đóng
-                            </button>
-                        </div>
-                    </div>
-                </div>
+                <OrderDetailModal
+                    order={viewOrderDetails}
+                    onClose={handleCloseModal}
+                    onStatusChange={handleStatusChange}
+                />
             )}
         </div>
-    )
+    );
 }
 
-export default Order
+export default Order;

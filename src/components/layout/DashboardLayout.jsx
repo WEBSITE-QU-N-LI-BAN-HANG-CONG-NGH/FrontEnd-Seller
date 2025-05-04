@@ -1,12 +1,23 @@
-import "../../styles/layout/layout.css"
+// src/components/layout/DashboardLayout.jsx
 import { useLocation } from 'react-router-dom';
-import { useState } from 'react';
-import { Link } from 'react-router-dom'
-import { LayoutDashboard, Package, ShoppingCart, User, LogOut, Menu } from 'lucide-react'
+import { useState, useEffect } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
+import { LayoutDashboard, Package, ShoppingCart, User, LogOut, Menu } from 'lucide-react';
+import "../../styles/layout/layout.css";
+import useAuth from '../../hooks/useAuth';
 
 function DashboardLayout({ children }) {
-    const location = useLocation()
-    const [isMobileNavOpen, setIsMobileNavOpen] = useState(false)
+    const location = useLocation();
+    const navigate = useNavigate();
+    const [isMobileNavOpen, setIsMobileNavOpen] = useState(false);
+    const { user, logout, loading } = useAuth();
+
+    // Chuyển hướng đến trang đăng nhập nếu chưa đăng nhập
+    useEffect(() => {
+        if (!loading && !user) {
+            navigate('/login');
+        }
+    }, [user, loading, navigate]);
 
     const routes = [
         {
@@ -20,7 +31,7 @@ function DashboardLayout({ children }) {
             icon: <Package className="icon" />,
         },
         {
-            href: "/dashboard/order",
+            href: "/dashboard/orders",
             label: "Quản lý đơn hàng",
             icon: <ShoppingCart className="icon" />,
         },
@@ -29,7 +40,21 @@ function DashboardLayout({ children }) {
             label: "Hồ sơ",
             icon: <User className="icon" />,
         },
-    ]
+    ];
+
+    // Xử lý đăng xuất
+    const handleLogout = async () => {
+        try {
+            await logout();
+            navigate('/login');
+        } catch (error) {
+            console.error("Lỗi khi đăng xuất:", error);
+        }
+    };
+
+    if (loading) {
+        return <div className="loading-container">Đang tải...</div>;
+    }
 
     return (
         <div className="dashboard-layout">
@@ -56,13 +81,25 @@ function DashboardLayout({ children }) {
                 <div className="sidebar-footer">
                     <div className="user-info">
                         <div className="avatar">
-                            <img src="/placeholder.svg?height=40&width=40" alt="Avatar" />
-                            <div className="avatar-fallback">TS</div>
+                            <img
+                                src={user?.imageUrl || "/placeholder.svg?height=40&width=40"}
+                                alt="Avatar"
+                                onError={(e) => {
+                                    e.target.style.display = 'none';
+                                    document.querySelector('.avatar-fallback').style.display = 'flex';
+                                }}
+                            />
+                            <div className="avatar-fallback">
+                                {user ? (user.firstName?.charAt(0) || '') + (user.lastName?.charAt(0) || '') : 'TS'}
+                            </div>
                         </div>
                         <div className="user-details">
-                            <div className="user-name">Seller</div>
+                            <div className="user-name">
+                                {user ? `${user.firstName || ''} ${user.lastName || ''}` : 'Người dùng'}
+                            </div>
+                            <div className="user-role">{user?.role || 'Seller'}</div>
                         </div>
-                        <button className="logout-button">
+                        <button className="logout-button" onClick={handleLogout}>
                             <LogOut className="icon" />
                             <span className="sr-only">Đăng xuất</span>
                         </button>
@@ -99,13 +136,25 @@ function DashboardLayout({ children }) {
                     <div className="sidebar-footer">
                         <div className="user-info">
                             <div className="avatar">
-                                <img src="/placeholder.svg?height=40&width=40" alt="Avatar" />
-                                <div className="avatar-fallback">TS</div>
+                                <img
+                                    src={user?.imageUrl || "/placeholder.svg?height=40&width=40"}
+                                    alt="Avatar"
+                                    onError={(e) => {
+                                        e.target.style.display = 'none';
+                                        document.querySelector('.mobile-avatar-fallback').style.display = 'flex';
+                                    }}
+                                />
+                                <div className="avatar-fallback mobile-avatar-fallback">
+                                    {user ? (user.firstName?.charAt(0) || '') + (user.lastName?.charAt(0) || '') : 'TS'}
+                                </div>
                             </div>
                             <div className="user-details">
-                                <div className="user-name">Seller</div>
+                                <div className="user-name">
+                                    {user ? `${user.firstName || ''} ${user.lastName || ''}` : 'Người dùng'}
+                                </div>
+                                <div className="user-role">{user?.role || 'Seller'}</div>
                             </div>
-                            <button className="logout-button">
+                            <button className="logout-button" onClick={handleLogout}>
                                 <LogOut className="icon" />
                                 <span className="sr-only">Đăng xuất</span>
                             </button>
@@ -124,15 +173,24 @@ function DashboardLayout({ children }) {
                 <div className="main-header">
                     <div className="header-actions">
                         <div className="avatar small">
-                            <img src="/placeholder.svg?height=32&width=32" alt="Avatar" />
-                            <div className="avatar-fallback">TS</div>
+                            <img
+                                src={user?.imageUrl || "/placeholder.svg?height=32&width=32"}
+                                alt="Avatar"
+                                onError={(e) => {
+                                    e.target.style.display = 'none';
+                                    document.querySelector('.header-avatar-fallback').style.display = 'flex';
+                                }}
+                            />
+                            <div className="avatar-fallback header-avatar-fallback">
+                                {user ? (user.firstName?.charAt(0) || '') + (user.lastName?.charAt(0) || '') : 'TS'}
+                            </div>
                         </div>
                     </div>
                 </div>
                 <div className="content-container">{children}</div>
             </main>
         </div>
-    )
+    );
 }
 
-export default DashboardLayout
+export default DashboardLayout;

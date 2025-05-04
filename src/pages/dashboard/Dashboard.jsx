@@ -1,6 +1,5 @@
-"use client"
-
-import { useState } from "react"
+// src/pages/dashboard/Dashboard.jsx
+import { useState, useEffect } from "react";
 import {
     Package,
     ShoppingCart,
@@ -15,29 +14,46 @@ import {
     RefreshCcw,
     UserPlus,
     UserCheck,
-} from "lucide-react"
-import "../../styles/dashboard/dashboard.css"
+} from "lucide-react";
+import "../../styles/dashboard/dashboard.css";
+import useDashboard from "../../hooks/useDashboard";
+import { formatCurrency } from "../../utils/formatters";
+import LoadingSpinner from "../../components/common/LoadingSpinner";
+import ErrorAlert from "../../components/common/ErrorAlert";
+
 function Dashboard() {
-    const [selectedMonth, setSelectedMonth] = useState("Tháng 3, 2023")
-    const [activeTab, setActiveTab] = useState("overview")
+    const [selectedMonth, setSelectedMonth] = useState("Tháng 5, 2025");
+    const [activeTab, setActiveTab] = useState("overview");
+    const {
+        overview,
+        monthlyRevenue,
+        orderStats,
+        productStats,
+        loading,
+        error,
+        fetchAllDashboardData
+    } = useDashboard();
 
-    // Dữ liệu mẫu cho biểu đồ doanh thu theo tháng
-    const monthlyRevenue = [
-        { month: "T1", amount: 65000000 },
-        { month: "T2", amount: 72000000 },
-        { month: "T3", amount: 120500000 },
-        { month: "T4", amount: 85000000 },
-        { month: "T5", amount: 90000000 },
-        { month: "T6", amount: 110000000 },
-        { month: "T7", amount: 95000000 },
-        { month: "T8", amount: 105000000 },
-        { month: "T9", amount: 115000000 },
-        { month: "T10", amount: 0 },
-        { month: "T11", amount: 0 },
-        { month: "T12", amount: 0 },
-    ]
+    // Fetch dữ liệu dashboard khi component mount
+    useEffect(() => {
+        fetchAllDashboardData();
+    }, [fetchAllDashboardData]);
 
-    // Dữ liệu mẫu cho phân tích chi tiết
+    if (loading) {
+        return <LoadingSpinner />;
+    }
+
+    if (error) {
+        return <ErrorAlert message={error} />;
+    }
+
+    // Chuyển đổi dữ liệu doanh thu theo tháng để hiển thị trên biểu đồ
+    const revenueChartData = monthlyRevenue ? Object.entries(monthlyRevenue).map(([month, amount]) => ({
+        month,
+        amount: amount
+    })) : [];
+
+    // Dữ liệu phân tích chi tiết
     const analyticsData = [
         {
             metric: "Tỷ lệ chuyển đổi",
@@ -49,7 +65,7 @@ function Dashboard() {
         },
         {
             metric: "Giá trị đơn hàng trung bình",
-            value: "2.150.000 ₫",
+            value: overview ? formatCurrency(overview.totalRevenue / overview.totalOrders) : "0 ₫",
             change: "+8%",
             status: "increase",
             icon: <CreditCard className="icon-small" />,
@@ -65,7 +81,7 @@ function Dashboard() {
         },
         {
             metric: "Tỷ lệ hủy đơn hàng",
-            value: "4.2%",
+            value: orderStats ? `${(orderStats.cancelled / orderStats.total * 100).toFixed(1)}%` : "0%",
             change: "+1.1%",
             status: "increase",
             icon: <ShoppingCart className="icon-small" />,
@@ -87,56 +103,7 @@ function Dashboard() {
             icon: <UserCheck className="icon-small" />,
             color: "indigo",
         },
-    ]
-
-    // Dữ liệu mẫu cho doanh thu theo sản phẩm
-    const productRevenue = [
-        {
-            id: "PROD-1",
-            name: "Laptop Gaming Asus ROG Strix G15",
-            category: "Laptop",
-            sold: 32,
-            revenue: 831680000,
-            percentOfTotal: 28,
-            color: "blue",
-        },
-        {
-            id: "PROD-2",
-            name: "Điện thoại iPhone 14 Pro Max",
-            category: "Điện thoại",
-            sold: 45,
-            revenue: 1349550000,
-            percentOfTotal: 45,
-            color: "primary",
-        },
-        {
-            id: "PROD-3",
-            name: "Tai nghe Bluetooth Apple AirPods Pro",
-            category: "Phụ kiện",
-            sold: 78,
-            revenue: 389220000,
-            percentOfTotal: 13,
-            color: "green",
-        },
-        {
-            id: "PROD-4",
-            name: 'Màn hình Gaming LG UltraGear 27"',
-            category: "Màn hình",
-            sold: 25,
-            revenue: 224750000,
-            percentOfTotal: 8,
-            color: "amber",
-        },
-        {
-            id: "PROD-5",
-            name: "Bàn phím cơ Logitech G Pro X",
-            category: "Phụ kiện",
-            sold: 62,
-            revenue: 185380000,
-            percentOfTotal: 6,
-            color: "orange",
-        },
-    ]
+    ];
 
     return (
         <div className="dashboard-page">
@@ -149,12 +116,15 @@ function Dashboard() {
                     <div className="month-selector">
                         <Calendar className="icon-small" />
                         <select value={selectedMonth} onChange={(e) => setSelectedMonth(e.target.value)} className="month-select">
-                            <option value="Tháng 1, 2023">Tháng 1, 2023</option>
-                            <option value="Tháng 2, 2023">Tháng 2, 2023</option>
-                            <option value="Tháng 3, 2023">Tháng 3, 2023</option>
+                            <option value="Tháng 5, 2025">Tháng 5, 2025</option>
+                            <option value="Tháng 4, 2025">Tháng 4, 2025</option>
+                            <option value="Tháng 3, 2025">Tháng 3, 2025</option>
                         </select>
                     </div>
-                    <button className="button icon-only outline">
+                    <button
+                        className="button icon-only outline"
+                        onClick={() => fetchAllDashboardData()}
+                    >
                         <RefreshCcw className="icon-small" />
                     </button>
                 </div>
@@ -168,7 +138,9 @@ function Dashboard() {
                             <DollarSign className="icon-small" />
                         </div>
                     </div>
-                    <div className="stat-value">120.500.000 ₫</div>
+                    <div className="stat-value">
+                        {overview ? formatCurrency(overview.totalRevenue) : "0 ₫"}
+                    </div>
                     <div className="stat-change positive">
                         <ArrowUp className="icon-tiny" />
                         <span>20% so với tháng trước</span>
@@ -182,7 +154,7 @@ function Dashboard() {
                             <ShoppingCart className="icon-small" />
                         </div>
                     </div>
-                    <div className="stat-value">+573</div>
+                    <div className="stat-value">+{overview ? overview.totalOrders : 0}</div>
                     <div className="stat-change positive">
                         <ArrowUp className="icon-tiny" />
                         <span>12% so với tháng trước</span>
@@ -196,7 +168,7 @@ function Dashboard() {
                             <Package className="icon-small" />
                         </div>
                     </div>
-                    <div className="stat-value">128</div>
+                    <div className="stat-value">{overview ? overview.totalProducts : 0}</div>
                     <div className="stat-change neutral">
                         <Zap className="icon-tiny amber" />
                         <span>+4 sản phẩm mới</span>
@@ -221,18 +193,21 @@ function Dashboard() {
             <div className="tabs">
                 <div className="tabs-list">
                     <button
+                        type="button"
                         className={`tab-button ${activeTab === "overview" ? "active" : ""}`}
                         onClick={() => setActiveTab("overview")}
                     >
                         Tổng quan
                     </button>
                     <button
+                        type="button"
                         className={`tab-button ${activeTab === "analytics" ? "active" : ""}`}
                         onClick={() => setActiveTab("analytics")}
                     >
                         Phân tích chi tiết
                     </button>
                     <button
+                        type="button"
                         className={`tab-button ${activeTab === "products" ? "active" : ""}`}
                         onClick={() => setActiveTab("products")}
                     >
@@ -250,15 +225,15 @@ function Dashboard() {
                             <div className="card-content">
                                 <div className="chart-container">
                                     <div className="bar-chart">
-                                        {monthlyRevenue.map((data, index) => (
+                                        {revenueChartData.map((data, index) => (
                                             <div key={index} className="chart-column">
                                                 <div
                                                     className={`bar ${index === 2 ? "highlight" : ""}`}
                                                     style={{
-                                                        height: `${data.amount ? (data.amount / 120500000) * 220 : 0}px`,
+                                                        height: `${data.amount ? (data.amount / Math.max(...revenueChartData.map(d => d.amount))) * 220 : 0}px`,
                                                     }}
                                                 >
-                                                    {index === 2 && <div className="bar-tooltip">{(data.amount / 1000000).toFixed(1)}M ₫</div>}
+                                                    {index === 2 && <div className="bar-tooltip">{formatCurrency(data.amount)}</div>}
                                                 </div>
                                                 <div className="bar-label">{data.month}</div>
                                             </div>
@@ -308,6 +283,7 @@ function Dashboard() {
                                 <p className="card-description">Phân tích doanh thu theo từng sản phẩm</p>
                             </div>
                             <div className="card-content">
+                                {/* Nội dung tab doanh thu theo sản phẩm */}
                                 <div className="products-table-container">
                                     <table className="products-table">
                                         <thead>
@@ -320,41 +296,23 @@ function Dashboard() {
                                         </tr>
                                         </thead>
                                         <tbody>
-                                        {productRevenue.map((product) => (
-                                            <tr key={product.id}>
-                                                <td className="product-name">{product.name}</td>
+                                        {overview && overview.recentOrders ? overview.recentOrders.map((order, index) => (
+                                            <tr key={index}>
+                                                <td className="product-name">{order.customerName}</td>
                                                 <td>
-                                                    <span className="category-badge">{product.category}</span>
+                                                    <span className="category-badge">Đơn hàng</span>
                                                 </td>
-                                                <td className="text-center">{product.sold}</td>
-                                                <td className="text-right">{product.revenue.toLocaleString("vi-VN")} ₫</td>
+                                                <td className="text-center">1</td>
+                                                <td className="text-right">{formatCurrency(order.totalAmount)}</td>
                                                 <td className="text-right">
-                                                    <span className={`percent-badge ${product.color}`}>{product.percentOfTotal}%</span>
+                                                    <span className={`percent-badge blue`}>
+                                                        {((order.totalAmount / overview.totalRevenue) * 100).toFixed(1)}%
+                                                    </span>
                                                 </td>
                                             </tr>
-                                        ))}
+                                        )) : null}
                                         </tbody>
                                     </table>
-                                </div>
-
-                                <div className="revenue-distribution">
-                                    <h3 className="distribution-title">Phân bổ doanh thu theo sản phẩm</h3>
-                                    <div className="distribution-chart">
-                                        {productRevenue.map((product, index) => (
-                                            <div key={index} className="distribution-item">
-                                                <div className="distribution-header">
-                                                    <span className="distribution-name">{product.name}</span>
-                                                    <span className="distribution-percent">{product.percentOfTotal}%</span>
-                                                </div>
-                                                <div className="progress-container">
-                                                    <div
-                                                        className={`progress-bar ${product.color}`}
-                                                        style={{ width: `${product.percentOfTotal}%` }}
-                                                    ></div>
-                                                </div>
-                                            </div>
-                                        ))}
-                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -362,7 +320,7 @@ function Dashboard() {
                 </div>
             </div>
         </div>
-    )
+    );
 }
 
-export default Dashboard
+export default Dashboard;

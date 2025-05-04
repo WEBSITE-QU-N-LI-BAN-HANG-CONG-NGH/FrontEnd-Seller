@@ -1,62 +1,234 @@
-"use client"
-
-import { useState } from "react"
-import { useNavigate } from "react-router-dom"
-import { ArrowLeft, Plus, Trash2, Save, ImagePlus, X, Info, Check, AlertCircle } from "lucide-react"
-import "../../styles/product/add_product.css"
-
+// src/pages/product/AddProduct.jsx
+import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
+import {
+    ArrowLeft,
+    Plus,
+    Trash2,
+    Save,
+    ImagePlus,
+    X,
+    Info,
+    Check,
+    AlertCircle
+} from "lucide-react";
+import "../../styles/product/add_product.css";
+import useProduct from "../../hooks/useProduct";
+import { isNotEmpty, isPositiveNumber } from "../../utils/validators";
+import LoadingSpinner from "../../components/common/LoadingSpinner";
+import ErrorAlert from "../../components/common/ErrorAlert";
 
 function AddProduct() {
-    const navigate = useNavigate()
-    const [isSubmitting, setIsSubmitting] = useState(false)
-    const [activeTab, setActiveTab] = useState("basic")
-    const [productImages, setProductImages] = useState([
-        "/placeholder.svg?height=200&width=200",
-        "/placeholder.svg?height=200&width=200",
-    ])
+    const navigate = useNavigate();
+    const { createProduct, uploadProductImage, loading, error, resetState } = useProduct();
+
+    const [isSubmitting, setIsSubmitting] = useState(false);
+    const [activeTab, setActiveTab] = useState("basic");
+    const [productImages, setProductImages] = useState([]);
     const [specifications, setSpecifications] = useState([
         { key: "CPU", value: "" },
         { key: "RAM", value: "" },
         { key: "Ổ cứng", value: "" },
         { key: "Màn hình", value: "" },
         { key: "Card đồ họa", value: "" },
-    ])
+    ]);
+    const [formErrors, setFormErrors] = useState({});
+    const [productData, setProductData] = useState({
+        title: "",
+        brand: "",
+        price: "",
+        quantity: "",
+        description: "",
+        topLevelCategory: "",
+        secondLevelCategory: "",
+        discountPersent: 0,
+        color: "",
+        sizes: [],
+        featured: false,
+        active: true
+    });
 
+    // Xử lý thêm kích thước sản phẩm
+    const handleAddSize = () => {
+        const newSizes = [...productData.sizes];
+        newSizes.push({ name: "", quantity: 0 });
+        setProductData({ ...productData, sizes: newSizes });
+    };
+
+    // Xử lý xóa kích thước sản phẩm
+    const handleRemoveSize = (index) => {
+        const newSizes = [...productData.sizes];
+        newSizes.splice(index, 1);
+        setProductData({ ...productData, sizes: newSizes });
+    };
+
+    // Xử lý thay đổi kích thước sản phẩm
+    const handleSizeChange = (index, field, value) => {
+        const newSizes = [...productData.sizes];
+        newSizes[index][field] = value;
+        setProductData({ ...productData, sizes: newSizes });
+    };
+
+    // Xử lý thêm thông số kỹ thuật
     const handleAddSpecification = () => {
-        setSpecifications([...specifications, { key: "", value: "" }])
-    }
+        setSpecifications([...specifications, { key: "", value: "" }]);
+    };
 
+    // Xử lý xóa thông số kỹ thuật
     const handleRemoveSpecification = (index) => {
-        const newSpecs = [...specifications]
-        newSpecs.splice(index, 1)
-        setSpecifications(newSpecs)
-    }
+        const newSpecs = [...specifications];
+        newSpecs.splice(index, 1);
+        setSpecifications(newSpecs);
+    };
 
+    // Xử lý thay đổi thông số kỹ thuật
     const handleSpecChange = (index, field, value) => {
-        const newSpecs = [...specifications]
-        newSpecs[index][field] = value
-        setSpecifications(newSpecs)
+        const newSpecs = [...specifications];
+        newSpecs[index][field] = value;
+        setSpecifications(newSpecs);
+    };
+
+    // Xử lý thay đổi input form
+    const handleInputChange = (e) => {
+        const { name, value, type, checked } = e.target;
+        setProductData({
+            ...productData,
+            [name]: type === 'checkbox' ? checked : value
+        });
+
+        // Xóa lỗi khi người dùng nhập lại
+        if (formErrors[name]) {
+            setFormErrors({
+                ...formErrors,
+                [name]: null
+            });
+        }
     }
 
-    const handleAddImage = () => {
-        setProductImages([...productImages, "/placeholder.svg?height=200&width=200"])
-    }
+    // Xác thực form trước khi gửi
+    const validateForm = () => {
+        const errors = {};
 
+        if (!isNotEmpty(productData.title)) {
+            errors.title = "Vui lòng nhập tên sản phẩm";
+        }
+
+        if (!isNotEmpty(productData.brand)) {
+            errors.brand = "Vui lòng nhập thương hiệu";
+        }
+
+        if (!isPositiveNumber(productData.price)) {
+            errors.price = "Giá bán phải là số dương";
+        }
+
+        if (!isPositiveNumber(productData.quantity)) {
+            errors.quantity = "Số lượng phải là số dương";
+        }
+
+        if (!isNotEmpty(productData.description)) {
+            errors.description = "Vui lòng nhập mô tả sản phẩm";
+        }
+
+        if (!isNotEmpty(productData.topLevelCategory)) {
+            errors.topLevelCategory = "Vui lòng chọn danh mục cấp 1";
+        }
+
+        setFormErrors(errors);
+        return Object.keys(errors).length === 0;
+    };
+
+    // Xử lý tải lên hình ảnh
+    const handleImageUpload = async (event, index) => {
+        const file = event.target.files[0];
+        if (!file) return;
+
+        const fileReader = new FileReader();
+        fileReader.onload = (e) => {
+            const newImages = [...productImages];
+            // Cập nhật preview image
+            newImages[index] = {
+                file: file,
+                preview: e.target.result,
+                uploading: true
+            };
+            setProductImages(newImages);
+        };
+        fileReader.readAsDataURL(file);
+    };
+
+    // Xử lý xóa hình ảnh
     const handleRemoveImage = (index) => {
-        const newImages = [...productImages]
-        newImages.splice(index, 1)
-        setProductImages(newImages)
-    }
+        const newImages = [...productImages];
+        newImages.splice(index, 1);
+        setProductImages(newImages);
+    };
 
-    const handleSubmit = (e) => {
-        e.preventDefault()
-        setIsSubmitting(true)
+    // Xử lý thêm ô hình ảnh mới
+    const handleAddImage = () => {
+        setProductImages([...productImages, null]);
+    };
 
-        // Giả lập việc lưu sản phẩm
-        setTimeout(() => {
-            setIsSubmitting(false)
-            navigate("/dashboard/products")
-        }, 1500)
+    // Xử lý gửi form
+    const handleSubmit = async (e) => {
+        e.preventDefault();
+
+        if (!validateForm()) {
+            return;
+        }
+
+        setIsSubmitting(true);
+
+        try {
+            // Chuẩn bị dữ liệu sản phẩm
+            const formattedData = {
+                ...productData,
+                price: parseInt(productData.price),
+                quantity: parseInt(productData.quantity),
+                discountPersent: parseInt(productData.discountPersent || 0),
+                description: productData.description,
+                // Chuyển thông số kỹ thuật thành một chuỗi JSON trong description
+                description: productData.description + "\n\n" + JSON.stringify(
+                    specifications.filter(spec => spec.key && spec.value)
+                        .reduce((obj, item) => {
+                            obj[item.key] = item.value;
+                            return obj;
+                        }, {})
+                ),
+                // Định dạng sizes cho API
+                sizes: productData.sizes.map(size => ({
+                    name: size.name,
+                    quantity: parseInt(size.quantity)
+                }))
+            };
+
+            // Gọi API tạo sản phẩm
+            const result = await createProduct(formattedData);
+
+            // Upload hình ảnh cho sản phẩm đã tạo
+            if (result.id) {
+                const uploadPromises = productImages
+                    .filter(img => img && img.file)
+                    .map(img => uploadProductImage(result.id, img.file));
+
+                await Promise.all(uploadPromises);
+            }
+
+            // Chuyển đến trang danh sách sản phẩm
+            navigate("/dashboard/products");
+
+        } catch (error) {
+            console.error("Lỗi khi tạo sản phẩm:", error);
+            setFormErrors({
+                ...formErrors,
+                submit: "Có lỗi xảy ra khi tạo sản phẩm. Vui lòng thử lại sau."
+            });
+        } finally {
+            setIsSubmitting(false);
+        }
+    };
+
+    if (loading) {
+        return <LoadingSpinner />;
     }
 
     return (
@@ -84,6 +256,18 @@ function AddProduct() {
                     </button>
                 </div>
             </div>
+
+            {error && <ErrorAlert message={error} onDismiss={() => resetState()} />}
+
+            {formErrors.submit && (
+                <div className="alert danger">
+                    <AlertCircle className="icon-small" />
+                    <div className="alert-content">
+                        <h4 className="alert-title">Lỗi</h4>
+                        <p className="alert-description">{formErrors.submit}</p>
+                    </div>
+                </div>
+            )}
 
             <div className="alert warning">
                 <AlertCircle className="icon-small" />
@@ -131,108 +315,201 @@ function AddProduct() {
                                 <div className="card-content">
                                     <div className="form-row">
                                         <div className="form-group">
-                                            <label htmlFor="product-name" className="form-label">
+                                            <label htmlFor="title" className="form-label">
                                                 Tên sản phẩm <span className="required">*</span>
                                             </label>
-                                            <input id="product-name" className="form-input" placeholder="Nhập tên sản phẩm" required />
+                                            <input
+                                                id="title"
+                                                name="title"
+                                                className={`form-input ${formErrors.title ? 'error' : ''}`}
+                                                placeholder="Nhập tên sản phẩm"
+                                                value={productData.title}
+                                                onChange={handleInputChange}
+                                                required
+                                            />
+                                            {formErrors.title && <div className="form-error">{formErrors.title}</div>}
                                         </div>
 
                                         <div className="form-group">
-                                            <label htmlFor="product-sku" className="form-label">
-                                                Mã sản phẩm (SKU) <span className="required">*</span>
+                                            <label htmlFor="brand" className="form-label">
+                                                Thương hiệu <span className="required">*</span>
                                             </label>
-                                            <input id="product-sku" className="form-input" placeholder="VD: PROD-001" required />
+                                            <input
+                                                id="brand"
+                                                name="brand"
+                                                className={`form-input ${formErrors.brand ? 'error' : ''}`}
+                                                placeholder="VD: Apple, Samsung, Asus..."
+                                                value={productData.brand}
+                                                onChange={handleInputChange}
+                                                required
+                                            />
+                                            {formErrors.brand && <div className="form-error">{formErrors.brand}</div>}
                                         </div>
                                     </div>
 
                                     <div className="form-row three-columns">
                                         <div className="form-group">
-                                            <label htmlFor="product-category" className="form-label">
+                                            <label htmlFor="topLevelCategory" className="form-label">
                                                 Danh mục <span className="required">*</span>
                                             </label>
-                                            <select id="product-category" className="form-select" required>
+                                            <select
+                                                id="topLevelCategory"
+                                                name="topLevelCategory"
+                                                className={`form-select ${formErrors.topLevelCategory ? 'error' : ''}`}
+                                                value={productData.topLevelCategory}
+                                                onChange={handleInputChange}
+                                                required
+                                            >
                                                 <option value="">Chọn danh mục</option>
-                                                <option value="laptop">Laptop</option>
-                                                <option value="phone">Điện thoại</option>
-                                                <option value="tablet">Máy tính bảng</option>
-                                                <option value="accessory">Phụ kiện</option>
-                                                <option value="monitor">Màn hình</option>
+                                                <option value="Laptop">Laptop</option>
+                                                <option value="Điện thoại">Điện thoại</option>
+                                                <option value="Máy tính bảng">Máy tính bảng</option>
+                                                <option value="Phụ kiện">Phụ kiện</option>
+                                                <option value="Màn hình">Màn hình</option>
                                             </select>
+                                            {formErrors.topLevelCategory && <div className="form-error">{formErrors.topLevelCategory}</div>}
                                         </div>
 
                                         <div className="form-group">
-                                            <label htmlFor="product-price" className="form-label">
+                                            <label htmlFor="price" className="form-label">
                                                 Giá bán (VNĐ) <span className="required">*</span>
                                             </label>
                                             <input
-                                                id="product-price"
+                                                id="price"
+                                                name="price"
                                                 type="number"
-                                                className="form-input"
+                                                className={`form-input ${formErrors.price ? 'error' : ''}`}
                                                 placeholder="VD: 25990000"
+                                                value={productData.price}
+                                                onChange={handleInputChange}
                                                 min="0"
                                                 required
                                             />
+                                            {formErrors.price && <div className="form-error">{formErrors.price}</div>}
                                         </div>
 
                                         <div className="form-group">
-                                            <label htmlFor="product-stock" className="form-label">
+                                            <label htmlFor="quantity" className="form-label">
                                                 Số lượng tồn kho <span className="required">*</span>
                                             </label>
                                             <input
-                                                id="product-stock"
+                                                id="quantity"
+                                                name="quantity"
                                                 type="number"
-                                                className="form-input"
+                                                className={`form-input ${formErrors.quantity ? 'error' : ''}`}
                                                 placeholder="VD: 10"
+                                                value={productData.quantity}
+                                                onChange={handleInputChange}
                                                 min="0"
                                                 required
                                             />
+                                            {formErrors.quantity && <div className="form-error">{formErrors.quantity}</div>}
                                         </div>
                                     </div>
 
                                     <div className="form-group">
-                                        <label htmlFor="product-description" className="form-label">
+                                        <label htmlFor="description" className="form-label">
                                             Mô tả sản phẩm <span className="required">*</span>
                                         </label>
                                         <textarea
-                                            id="product-description"
-                                            className="form-textarea"
+                                            id="description"
+                                            name="description"
+                                            className={`form-textarea ${formErrors.description ? 'error' : ''}`}
                                             placeholder="Nhập mô tả chi tiết về sản phẩm"
+                                            value={productData.description}
+                                            onChange={handleInputChange}
                                             required
                                         ></textarea>
+                                        {formErrors.description && <div className="form-error">{formErrors.description}</div>}
                                     </div>
 
                                     <div className="separator"></div>
 
                                     <div className="form-row">
                                         <div className="form-group">
-                                            <label htmlFor="product-brand" className="form-label">
-                                                Thương hiệu
+                                            <label htmlFor="color" className="form-label">
+                                                Màu sắc
                                             </label>
-                                            <input id="product-brand" className="form-input" placeholder="VD: Apple, Samsung, Asus..." />
+                                            <input
+                                                id="color"
+                                                name="color"
+                                                className="form-input"
+                                                placeholder="VD: Đen, Trắng, Bạc..."
+                                                value={productData.color}
+                                                onChange={handleInputChange}
+                                            />
                                         </div>
 
                                         <div className="form-group">
-                                            <label htmlFor="product-warranty" className="form-label">
-                                                Bảo hành
+                                            <label htmlFor="discountPersent" className="form-label">
+                                                Phần trăm giảm giá
                                             </label>
-                                            <input id="product-warranty" className="form-input" placeholder="VD: 12 tháng" />
+                                            <input
+                                                id="discountPersent"
+                                                name="discountPersent"
+                                                type="number"
+                                                className="form-input"
+                                                placeholder="VD: 10"
+                                                min="0"
+                                                max="100"
+                                                value={productData.discountPersent}
+                                                onChange={handleInputChange}
+                                            />
                                         </div>
                                     </div>
 
-                                    <div className="form-row">
-                                        <div className="form-group">
-                                            <label htmlFor="product-origin" className="form-label">
-                                                Xuất xứ
-                                            </label>
-                                            <input id="product-origin" className="form-input" placeholder="VD: Việt Nam, Trung Quốc, Mỹ..." />
-                                        </div>
+                                    <div className="separator"></div>
 
-                                        <div className="form-group">
-                                            <label htmlFor="product-weight" className="form-label">
-                                                Trọng lượng (gram)
-                                            </label>
-                                            <input id="product-weight" type="number" className="form-input" placeholder="VD: 1500" min="0" />
+                                    <div className="form-section">
+                                        <h3 className="section-title">Kích thước sản phẩm</h3>
+                                        <div className="sizes-table">
+                                            <table>
+                                                <thead>
+                                                <tr>
+                                                    <th>Kích thước</th>
+                                                    <th>Số lượng</th>
+                                                    <th>Thao tác</th>
+                                                </tr>
+                                                </thead>
+                                                <tbody>
+                                                {productData.sizes.map((size, index) => (
+                                                    <tr key={index}>
+                                                        <td>
+                                                            <input
+                                                                className="form-input"
+                                                                placeholder="VD: S, M, L, XL, 256GB..."
+                                                                value={size.name}
+                                                                onChange={(e) => handleSizeChange(index, "name", e.target.value)}
+                                                            />
+                                                        </td>
+                                                        <td>
+                                                            <input
+                                                                type="number"
+                                                                className="form-input"
+                                                                placeholder="Số lượng"
+                                                                min="0"
+                                                                value={size.quantity}
+                                                                onChange={(e) => handleSizeChange(index, "quantity", e.target.value)}
+                                                            />
+                                                        </td>
+                                                        <td>
+                                                            <button
+                                                                type="button"
+                                                                className="button icon-only ghost"
+                                                                onClick={() => handleRemoveSize(index)}
+                                                            >
+                                                                <Trash2 className="icon-small danger" />
+                                                            </button>
+                                                        </td>
+                                                    </tr>
+                                                ))}
+                                                </tbody>
+                                            </table>
                                         </div>
+                                        <button type="button" className="button outline" onClick={handleAddSize}>
+                                            <Plus className="icon-small" />
+                                            Thêm kích thước
+                                        </button>
                                     </div>
 
                                     <div className="separator"></div>
@@ -240,26 +517,38 @@ function AddProduct() {
                                     <div className="toggle-options">
                                         <div className="toggle-group">
                                             <div className="toggle-info">
-                                                <label htmlFor="product-featured" className="toggle-label">
+                                                <label htmlFor="featured" className="toggle-label">
                                                     Sản phẩm nổi bật
                                                 </label>
                                                 <p className="toggle-description">Sản phẩm sẽ được hiển thị ở trang chủ</p>
                                             </div>
                                             <label className="toggle">
-                                                <input type="checkbox" id="product-featured" />
+                                                <input
+                                                    type="checkbox"
+                                                    id="featured"
+                                                    name="featured"
+                                                    checked={productData.featured}
+                                                    onChange={handleInputChange}
+                                                />
                                                 <span className="toggle-slider"></span>
                                             </label>
                                         </div>
 
                                         <div className="toggle-group">
                                             <div className="toggle-info">
-                                                <label htmlFor="product-active" className="toggle-label">
+                                                <label htmlFor="active" className="toggle-label">
                                                     Trạng thái
                                                 </label>
                                                 <p className="toggle-description">Sản phẩm sẽ được hiển thị trên website</p>
                                             </div>
                                             <label className="toggle">
-                                                <input type="checkbox" id="product-active" defaultChecked />
+                                                <input
+                                                    type="checkbox"
+                                                    id="active"
+                                                    name="active"
+                                                    checked={productData.active}
+                                                    onChange={handleInputChange}
+                                                />
                                                 <span className="toggle-slider"></span>
                                             </label>
                                         </div>
@@ -330,32 +619,6 @@ function AddProduct() {
                                             hàng.
                                         </p>
                                     </div>
-
-                                    <div className="specs-suggestion">
-                                        <h3 className="suggestion-title">Gợi ý thông số kỹ thuật theo danh mục:</h3>
-                                        <div className="suggestion-grid">
-                                            <div className="suggestion-column">
-                                                <h4 className="suggestion-category">Laptop:</h4>
-                                                <ul className="suggestion-list">
-                                                    <li>CPU: Intel Core i5-12500H, AMD Ryzen 7 5800H...</li>
-                                                    <li>RAM: 8GB, 16GB DDR4 3200MHz...</li>
-                                                    <li>Ổ cứng: SSD 512GB PCIe NVMe...</li>
-                                                    <li>Màn hình: 15.6 inch Full HD IPS...</li>
-                                                    <li>Card đồ họa: NVIDIA GeForce RTX 3050 4GB...</li>
-                                                </ul>
-                                            </div>
-                                            <div className="suggestion-column">
-                                                <h4 className="suggestion-category">Điện thoại:</h4>
-                                                <ul className="suggestion-list">
-                                                    <li>Màn hình: 6.1 inch OLED, 120Hz...</li>
-                                                    <li>Chip: Apple A15 Bionic, Snapdragon 8 Gen 1...</li>
-                                                    <li>RAM: 6GB, 8GB LPDDR5...</li>
-                                                    <li>Bộ nhớ trong: 128GB, 256GB...</li>
-                                                    <li>Camera: 48MP, f/1.8, OIS...</li>
-                                                </ul>
-                                            </div>
-                                        </div>
-                                    </div>
                                 </div>
                             </div>
                         )}
@@ -372,16 +635,22 @@ function AddProduct() {
                                             <div key={index} className="image-item">
                                                 <div className="image-container">
                                                     <img
-                                                        src={image || "/placeholder.svg"}
+                                                        src={image ? image.preview : "/placeholder.svg"}
                                                         alt={`Product image ${index + 1}`}
                                                         className="product-image"
                                                     />
                                                     <div className="image-actions">
                                                         <button type="button" className="image-action-button">
-                                                            <input type="file" className="file-input" accept="image/*" title="Tải lên hình ảnh" />
+                                                            <input
+                                                                type="file"
+                                                                className="file-input"
+                                                                accept="image/*"
+                                                                title="Tải lên hình ảnh"
+                                                                onChange={(e) => handleImageUpload(e, index)}
+                                                            />
                                                             <span className="action-icon-wrapper">
-                                <ImagePlus className="icon-small" />
-                              </span>
+                                                                <ImagePlus className="icon-small" />
+                                                            </span>
                                                         </button>
                                                         <button
                                                             type="button"
@@ -438,7 +707,7 @@ function AddProduct() {
                 </div>
             </form>
         </div>
-    )
+    );
 }
 
-export default AddProduct
+export default AddProduct;

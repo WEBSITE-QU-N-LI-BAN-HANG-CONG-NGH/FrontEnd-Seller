@@ -1,85 +1,106 @@
-"use client"
-
-import React, { useState } from "react"
-import { useNavigate } from "react-router-dom"
-import { Download, Edit, MoreHorizontal, Plus, Search, SlidersHorizontal, Trash2 } from "lucide-react"
-import "../../styles/product/product.css"
-
-// Sample product data
-const products = [
-    {
-        id: "PROD-1",
-        name: "Laptop Gaming Asus ROG Strix G15",
-        category: "Laptop",
-        price: 25990000,
-        stock: 15,
-        status: "Đang bán",
-        image: "/placeholder.svg?height=40&width=40",
-    },
-    {
-        id: "PROD-2",
-        name: "Điện thoại iPhone 14 Pro Max",
-        category: "Điện thoại",
-        price: 29990000,
-        stock: 8,
-        status: "Đang bán",
-        image: "/placeholder.svg?height=40&width=40",
-    },
-    {
-        id: "PROD-3",
-        name: "Tai nghe Bluetooth Apple AirPods Pro",
-        category: "Phụ kiện",
-        price: 4990000,
-        stock: 25,
-        status: "Đang bán",
-        image: "/placeholder.svg?height=40&width=40",
-    },
-    {
-        id: "PROD-4",
-        name: 'Màn hình Gaming LG UltraGear 27"',
-        category: "Màn hình",
-        price: 8990000,
-        stock: 5,
-        status: "Đang bán",
-        image: "/placeholder.svg?height=40&width=40",
-    },
-    {
-        id: "PROD-5",
-        name: "Bàn phím cơ Logitech G Pro X",
-        category: "Phụ kiện",
-        price: 2990000,
-        stock: 0,
-        status: "Hết hàng",
-        image: "/placeholder.svg?height=40&width=40",
-    },
-]
+// src/pages/product/Product.jsx
+import React, { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
+import { Download, Edit, MoreHorizontal, Plus, Search, SlidersHorizontal, Trash2 } from "lucide-react";
+import "../../styles/product/product.css";
+import useProduct from "../../hooks/useProduct";
+import { formatCurrency } from "../../utils/formatters";
+import LoadingSpinner from "../../components/common/LoadingSpinner";
+import ErrorAlert from "../../components/common/ErrorAlert";
+import ConfirmModal from "../../components/feature/ConfirmModal";
 
 function Product() {
-    const navigate = useNavigate()
-    const [searchQuery, setSearchQuery] = useState("")
-    const [dropdownOpen, setDropdownOpen] = useState(null)
+    const navigate = useNavigate();
+    const [searchQuery, setSearchQuery] = useState("");
+    const [dropdownOpen, setDropdownOpen] = useState(null);
+    const [deleteModalOpen, setDeleteModalOpen] = useState(false);
+    const [selectedProduct, setSelectedProduct] = useState(null);
 
+    const {
+        products,
+        loading,
+        error,
+        fetchProducts,
+        deleteProduct,
+        resetState
+    } = useProduct();
+
+    // Lấy danh sách sản phẩm khi component mount
+    useEffect(() => {
+        fetchProducts();
+    }, [fetchProducts]);
+
+    // Lọc sản phẩm theo từ khóa tìm kiếm
     const filteredProducts = products.filter(
         (product) =>
-            product.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-            product.category.toLowerCase().includes(searchQuery.toLowerCase()) ||
-            product.id.toLowerCase().includes(searchQuery.toLowerCase()),
-    )
+            product.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+            (product.category?.name || '').toLowerCase().includes(searchQuery.toLowerCase()) ||
+            (product.id + '').toLowerCase().includes(searchQuery.toLowerCase()),
+    );
 
-    const toggleDropdown = (productId) => {
+    // Mở/đóng dropdown
+    const toggleDropdown = (e, productId) => {
+        e.stopPropagation();
         if (dropdownOpen === productId) {
-            setDropdownOpen(null)
+            setDropdownOpen(null);
         } else {
-            setDropdownOpen(productId)
+            setDropdownOpen(productId);
         }
+    };
+
+    // Xử lý ấn nút xóa
+    const handleDeleteClick = (e, product) => {
+        e.stopPropagation();
+        setSelectedProduct(product);
+        setDeleteModalOpen(true);
+        setDropdownOpen(null);
+    };
+
+    // Xử lý xác nhận xóa
+    const handleConfirmDelete = async () => {
+        if (selectedProduct) {
+            try {
+                await deleteProduct(selectedProduct.id);
+                setDeleteModalOpen(false);
+                setSelectedProduct(null);
+            } catch (err) {
+                console.error("Lỗi khi xóa sản phẩm:", err);
+            }
+        }
+    };
+
+    // Xử lý hủy xóa
+    const handleCancelDelete = () => {
+        setDeleteModalOpen(false);
+        setSelectedProduct(null);
+    };
+
+    // Xử lý chỉnh sửa sản phẩm
+    const handleEditClick = (e, productId) => {
+        e.stopPropagation();
+        navigate(`/dashboard/products/edit/${productId}`);
+        setDropdownOpen(null);
+    };
+
+    // Click bên ngoài để đóng dropdown
+    useEffect(() => {
+        const handleClickOutside = () => setDropdownOpen(null);
+        document.addEventListener("click", handleClickOutside);
+        return () => document.removeEventListener("click", handleClickOutside);
+    }, []);
+
+    if (loading) {
+        return <LoadingSpinner />;
     }
 
-    // Close dropdown when clicking outside
-    React.useEffect(() => {
-        const handleClickOutside = () => setDropdownOpen(null)
-        document.addEventListener("click", handleClickOutside)
-        return () => document.removeEventListener("click", handleClickOutside)
-    }, [])
+    if (error) {
+        return (
+            <ErrorAlert
+                message={error}
+                onDismiss={() => resetState()}
+            />
+        );
+    }
 
     return (
         <div className="products-page">
@@ -147,29 +168,28 @@ function Product() {
                                         <td>
                                             <div className="product-info">
                                                 <img
-                                                    src={product.image || "/placeholder.svg"}
-                                                    alt={product.name}
+                                                    src={product.imageUrls && product.imageUrls.length > 0
+                                                        ? product.imageUrls[0].downloadUrl
+                                                        : "/placeholder.svg"}
+                                                    alt={product.title}
                                                     className="product-thumbnail"
                                                 />
-                                                <span className="product-name">{product.name}</span>
+                                                <span className="product-name">{product.title}</span>
                                             </div>
                                         </td>
-                                        <td>{product.category}</td>
-                                        <td className="price-cell">{product.price.toLocaleString("vi-VN")} ₫</td>
-                                        <td className="stock-cell">{product.stock}</td>
+                                        <td>{product.topLevelCategory || 'Chưa phân loại'}</td>
+                                        <td className="price-cell">{formatCurrency(product.price)}</td>
+                                        <td className="stock-cell">{product.quantity}</td>
                                         <td className="status-cell">
-                        <span className={`status-badge ${product.status === "Đang bán" ? "active" : "inactive"}`}>
-                          {product.status}
-                        </span>
+                                            <span className={`status-badge ${product.quantity > 0 ? "active" : "inactive"}`}>
+                                                {product.quantity > 0 ? "Đang bán" : "Hết hàng"}
+                                            </span>
                                         </td>
                                         <td className="actions-cell">
                                             <div className="dropdown">
                                                 <button
                                                     className="button icon-only ghost"
-                                                    onClick={(e) => {
-                                                        e.stopPropagation()
-                                                        toggleDropdown(product.id)
-                                                    }}
+                                                    onClick={(e) => toggleDropdown(e, product.id)}
                                                 >
                                                     <MoreHorizontal className="icon-small" />
                                                     <span className="sr-only">Mở menu</span>
@@ -178,11 +198,17 @@ function Product() {
                                                     <div className="dropdown-menu">
                                                         <div className="dropdown-header">Thao tác</div>
                                                         <div className="dropdown-divider"></div>
-                                                        <button className="dropdown-item">
+                                                        <button
+                                                            className="dropdown-item"
+                                                            onClick={(e) => handleEditClick(e, product.id)}
+                                                        >
                                                             <Edit className="icon-small" />
                                                             Chỉnh sửa
                                                         </button>
-                                                        <button className="dropdown-item danger">
+                                                        <button
+                                                            className="dropdown-item danger"
+                                                            onClick={(e) => handleDeleteClick(e, product)}
+                                                        >
                                                             <Trash2 className="icon-small" />
                                                             Xóa
                                                         </button>
@@ -206,8 +232,21 @@ function Product() {
                     </div>
                 </div>
             </div>
+
+            {/* Modal xác nhận xóa */}
+            {deleteModalOpen && selectedProduct && (
+                <ConfirmModal
+                    title="Xác nhận xóa sản phẩm"
+                    message={`Bạn có chắc chắn muốn xóa sản phẩm "${selectedProduct.title}" không? Hành động này không thể hoàn tác.`}
+                    confirmText="Xóa"
+                    cancelText="Hủy"
+                    onConfirm={handleConfirmDelete}
+                    onCancel={handleCancelDelete}
+                    variant="danger"
+                />
+            )}
         </div>
-    )
+    );
 }
 
-export default Product
+export default Product;
