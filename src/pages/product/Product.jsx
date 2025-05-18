@@ -4,10 +4,9 @@ import { useNavigate } from "react-router-dom";
 import { Download, Edit, MoreHorizontal, Plus, Search, SlidersHorizontal, Trash2 } from "lucide-react";
 import "../../styles/product/product.css";
 import useProduct from "../../hooks/useProduct";
-import { formatCurrency } from "../../utils/formatters";
+import { formatCurrency } from "../../utils/format.js";
 import LoadingSpinner from "../../components/common/LoadingSpinner";
 import ErrorAlert from "../../components/common/ErrorAlert";
-import ConfirmModal from "../../components/feature/ConfirmModal";
 
 function Product() {
     const navigate = useNavigate();

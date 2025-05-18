@@ -1,33 +1,33 @@
 // src/services/sellerService.js
-import axiosClient from './axiosClient';
+import api from '../config/Api.js';
 
 const sellerService = {
     getProfile: () => {
-        return axiosClient.get('/seller/profile');
+        return api.get('/seller/profile');
     },
 
     updateProfile: (data) => {
-        return axiosClient.put('/seller/profile', data);
+        return api.put('/seller/profile', data);
     },
 
     getShopInfo: () => {
-        return axiosClient.get('/seller/profile/shop');
+        return api.get('/seller/profile/shop');
     },
 
     updateShopInfo: (data) => {
-        return axiosClient.put('/seller/profile/shop', data);
+        return api.put('/seller/profile/shop', data);
     },
 
     getVerificationStatus: () => {
-        return axiosClient.get('/seller/profile/verification-status');
+        return api.get('/seller/profile/verification-status');
     },
 
     verifySellerRole: () => {
-        return axiosClient.get('/seller/verify-role');
+        return api.get('/seller/verify-role');
     },
 
     getSellerStatus: () => {
-        return axiosClient.get('/seller/status');
+        return api.get('/seller/status');
     }
 };
 

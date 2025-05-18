@@ -1,21 +1,21 @@
 // src/services/dashboardService.js
-import axiosClient from './axiosClient';
+import api from '../config/Api.js';
 
 const dashboardService = {
     getDashboardOverview: () => {
-        return axiosClient.get('/seller/dashboard/overview');
+        return api.get('/seller/dashboard/overview');
     },
 
     getMonthlyRevenue: () => {
-        return axiosClient.get('/seller/dashboard/revenue');
+        return api.get('/seller/dashboard/revenue');
     },
 
     getOrderStats: () => {
-        return axiosClient.get('/seller/dashboard/orders/stats');
+        return api.get('/seller/dashboard/orders/stats');
     },
 
     getProductStats: () => {
-        return axiosClient.get('/seller/dashboard/products/stats');
+        return api.get('/seller/dashboard/products/stats');
     }
 };
 

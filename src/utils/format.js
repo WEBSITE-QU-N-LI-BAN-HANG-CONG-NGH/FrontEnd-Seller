@@ -1,4 +1,4 @@
-// src/utils/formatters.js
+// src/utils/format.js
 
 // Format tiền VND
 export const formatCurrency = (amount) => {

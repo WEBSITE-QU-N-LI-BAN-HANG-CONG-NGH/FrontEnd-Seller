@@ -1,5 +1,5 @@
 // src/pages/product/AddProduct.jsx
-import { useState, useEffect } from "react";
+import { useState} from "react";
 import { useNavigate } from "react-router-dom";
 import {
     ArrowLeft,
@@ -185,7 +185,6 @@ function AddProduct() {
                 price: parseInt(productData.price),
                 quantity: parseInt(productData.quantity),
                 discountPersent: parseInt(productData.discountPersent || 0),
-                description: productData.description,
                 // Chuyển thông số kỹ thuật thành một chuỗi JSON trong description
                 description: productData.description + "\n\n" + JSON.stringify(
                     specifications.filter(spec => spec.key && spec.value)

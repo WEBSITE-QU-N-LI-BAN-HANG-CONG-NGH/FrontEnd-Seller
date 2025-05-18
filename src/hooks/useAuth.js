@@ -1,7 +1,7 @@
 // src/hooks/useAuth.js
 import { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
-import axiosClient from '../services/axiosClient';
+import api from '../config/Api.js';
 
 const useAuth = () => {
     const [user, setUser] = useState(null);
@@ -14,19 +14,19 @@ const useAuth = () => {
         const checkAuthStatus = async () => {
             setLoading(true);
             try {
-                const token = localStorage.getItem('accessToken');
+                const token = localStorage.getItem('jwt');
                 if (!token) {
                     setUser(null);
                     setLoading(false);
                     return;
                 }
 
-                const response = await axiosClient.get('/users/profile');
+                const response = await api.get('/users/profile');
                 setUser(response.data);
             } catch (err) {
                 console.error('Lỗi kiểm tra auth:', err);
                 setError(err.response?.data?.message || 'Lỗi xác thực');
-                localStorage.removeItem('accessToken');
+                localStorage.removeItem('jwt');
                 setUser(null);
             } finally {
                 setLoading(false);
@@ -41,9 +41,9 @@ const useAuth = () => {
         setLoading(true);
         setError(null);
         try {
-            const response = await axiosClient.post('/auth/login', { email, password });
+            const response = await api.post('/auth/login', { email, password });
             const { accessToken, user } = response.data.data;
-            localStorage.setItem('accessToken', accessToken);
+            localStorage.setItem('jwt', accessToken);
             setUser(user);
             return user;
         } catch (err) {
@@ -57,11 +57,11 @@ const useAuth = () => {
     // Đăng xuất
     const logout = useCallback(async () => {
         try {
-            await axiosClient.post('/auth/logout');
+            await api.post('/auth/logout');
         } catch (error) {
             console.error('Lỗi đăng xuất:', error);
         } finally {
-            localStorage.removeItem('accessToken');
+            localStorage.removeItem('jwt');
             setUser(null);
             navigate('/login');
         }

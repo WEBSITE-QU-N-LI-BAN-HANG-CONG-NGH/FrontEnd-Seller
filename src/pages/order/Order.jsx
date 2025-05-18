@@ -3,10 +3,9 @@ import { useState, useEffect } from "react";
 import { Calendar, Download, Eye, Filter, MoreHorizontal, Search, X } from "lucide-react";
 import "../../styles/order/order.css";
 import useOrder from "../../hooks/useOrder";
-import { formatCurrency, formatDate } from "../../utils/formatters";
+import { formatCurrency, formatDate } from "../../utils/format.js";
 import LoadingSpinner from "../../components/common/LoadingSpinner";
 import ErrorAlert from "../../components/common/ErrorAlert";
-import OrderDetailModal from "../../components/feature/OrderDetailModal";
 
 function Order() {
     const [searchQuery, setSearchQuery] = useState("");

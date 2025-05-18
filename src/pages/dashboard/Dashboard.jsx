@@ -17,7 +17,7 @@ import {
 } from "lucide-react";
 import "../../styles/dashboard/dashboard.css";
 import useDashboard from "../../hooks/useDashboard";
-import { formatCurrency } from "../../utils/formatters";
+import { formatCurrency } from "../../utils/format.js";
 import LoadingSpinner from "../../components/common/LoadingSpinner";
 import ErrorAlert from "../../components/common/ErrorAlert";
 

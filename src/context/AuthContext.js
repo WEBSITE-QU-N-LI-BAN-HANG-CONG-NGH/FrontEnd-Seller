@@ -1,7 +1,7 @@
 // src/context/AuthContext.js
 import { createContext, useContext, useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import axiosClient from '../services/axiosClient';
+import api from '../config/Api.js';
 
 const AuthContext = createContext(null);
 
@@ -15,18 +15,18 @@ export const AuthProvider = ({ children }) => {
         const checkAuthStatus = async () => {
             setLoading(true);
             try {
-                const token = localStorage.getItem('accessToken');
+                const token = localStorage.getItem('jwt');
                 if (!token) {
                     setUser(null);
                     setLoading(false);
                     return;
                 }
 
-                const response = await axiosClient.get('/users/profile');
+                const response = await api.get('/users/profile');
                 setUser(response.data);
             } catch (err) {
                 console.error('Lỗi kiểm tra auth:', err);
-                localStorage.removeItem('accessToken');
+                localStorage.removeItem('jwt');
                 setUser(null);
             } finally {
                 setLoading(false);
@@ -40,9 +40,9 @@ export const AuthProvider = ({ children }) => {
     const login = async (email, password) => {
         setLoading(true);
         try {
-            const response = await axiosClient.post('/auth/login', {email, password});
+            const response = await api.post('/auth/login', {email, password});
             const {accessToken, user} = response.data.data;
-            localStorage.setItem('accessToken', accessToken);
+            localStorage.setItem('jwt', accessToken);
             setUser(user);
             return user;
         } catch (err) {
@@ -53,9 +53,9 @@ export const AuthProvider = ({ children }) => {
     };
 
     // Đăng xuất
-    const logout = async () => {
+    const jwt = async () => {
         try {
-            await axiosClient.post('/auth/logout');
+            await api.post('/auth/logout');
         } catch (error) {
             console.error('Lỗi đăng xuất:', error);
         } finally {

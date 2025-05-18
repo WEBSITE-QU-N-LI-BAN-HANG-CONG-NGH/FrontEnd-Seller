@@ -1,7 +1,7 @@
 // src/components/feature/OrderDetailModal.jsx
 import React from 'react';
 import { X } from 'lucide-react';
-import { formatCurrency, formatDate, formatDateTime } from '../../utils/formatters';
+import { formatCurrency, formatDate, formatDateTime } from '../../utils/format.js';
 
 const OrderDetailModal = ({ order, onClose, onStatusChange }) => {
     // Chuyển đổi mã trạng thái thành chữ tiếng Việt

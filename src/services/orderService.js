@@ -1,23 +1,23 @@
 // src/services/orderService.js
-import axiosClient from './axiosClient';
+import api from '../config/Api.js';
 
 const orderService = {
     getSellerOrders: (params) => {
-        return axiosClient.get('/seller/orders', { params });
+        return api.get('/seller/orders', { params });
     },
 
     getOrderDetail: (orderId) => {
-        return axiosClient.get(`/seller/orders/${orderId}`);
+        return api.get(`/seller/orders/${orderId}`);
     },
 
     updateOrderStatus: (orderId, status) => {
-        return axiosClient.put(`/seller/orders/${orderId}/status`, null, {
+        return api.put(`/seller/orders/${orderId}/status`, null, {
             params: { status }
         });
     },
 
     getOrderStatistics: (period) => {
-        return axiosClient.get('/seller/orders/statistics', {
+        return api.get('/seller/orders/statistics', {
             params: { period }
         });
     }

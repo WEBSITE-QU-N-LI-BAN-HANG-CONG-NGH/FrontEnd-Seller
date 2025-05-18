@@ -2,7 +2,7 @@ import axios from 'axios';
 
 const API_URL = 'http://localhost:8080/api/v1';
 
-const axiosClient = axios.create({
+const api = axios.create({
     baseURL: API_URL,
     headers: {
         'Content-Type': 'application/json',
@@ -10,9 +10,9 @@ const axiosClient = axios.create({
 });
 
 // Interceptor xử lý việc thêm token vào header
-axiosClient.interceptors.request.use(
+api.interceptors.request.use(
     (config) => {
-        const token = localStorage.getItem('accessToken');
+        const token = localStorage.getItem('jwt');
         if (token) {
             config.headers['Authorization'] = `Bearer ${token}`;
         }
@@ -24,7 +24,7 @@ axiosClient.interceptors.request.use(
 );
 
 // Interceptor xử lý refresh token khi token hết hạn
-axiosClient.interceptors.response.use(
+api.interceptors.response.use(
     (response) => {
         return response;
     },
@@ -38,15 +38,15 @@ axiosClient.interceptors.response.use(
                     withCredentials: true
                 });
                 const { accessToken } = response.data.data;
-                localStorage.setItem('accessToken', accessToken);
+                localStorage.setItem('jwt', accessToken);
 
                 // Thử lại request ban đầu với token mới
                 originalRequest.headers['Authorization'] = `Bearer ${accessToken}`;
                 return axios(originalRequest);
             } catch (refreshError) {
                 // Nếu refresh token cũng hết hạn, đăng xuất người dùng
-                localStorage.removeItem('accessToken');
-                window.location.href = '/login';
+                localStorage.removeItem('jwt');
+                window.location.href = 'http://localhost:5173';
                 return Promise.reject(refreshError);
             }
         }
@@ -54,4 +54,4 @@ axiosClient.interceptors.response.use(
     }
 );
 
-export default axiosClient;
+export default api;

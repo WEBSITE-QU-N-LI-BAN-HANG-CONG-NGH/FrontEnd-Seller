@@ -320,7 +320,6 @@ function Profile() {
                                             <label htmlFor="email" className="form-label">
                                                 Email liên hệ
                                             </label>
-                                            // src/pages/profile/Profile.jsx (tiếp tục)
                                             <div className="input-icon">
                                                 <Mail className="icon-small" />
                                             </div>
@@ -330,7 +329,7 @@ function Profile() {
                                                 className={`form-input with-icon ${formErrors.email ? 'error' : ''}`}
                                                 value={formData.email}
                                                 onChange={handleChange}
-                                                disabled={true} // Email không được sửa
+                                                disabled={true}
                                             />
                                         </div>
                                         {formErrors.email && <div className="form-error">{formErrors.email}</div>}
@@ -423,7 +422,6 @@ function Profile() {
                                     </div>
                                 </div>
                             </div>
-                        </div>
                         <div className="card-footer">
                     {isEditing ? (
                         <>
