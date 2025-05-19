@@ -1,4 +1,5 @@
 // src/hooks/useDashboard.js
+
 import { useState, useCallback } from 'react';
 import dashboardService from '../services/dashboardService';
 
@@ -7,10 +8,12 @@ const useDashboard = () => {
     const [monthlyRevenue, setMonthlyRevenue] = useState(null);
     const [orderStats, setOrderStats] = useState(null);
     const [productStats, setProductStats] = useState(null);
+    const [dailyRevenue, setDailyRevenue] = useState(null);
+    const [categoryRevenue, setCategoryRevenue] = useState(null);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState(null);
 
-    // Lấy tổng quan dashboard
+    // Các hàm hiện có
     const fetchDashboardOverview = useCallback(async () => {
         setLoading(true);
         try {
@@ -25,7 +28,6 @@ const useDashboard = () => {
         }
     }, []);
 
-    // Lấy doanh thu theo tháng
     const fetchMonthlyRevenue = useCallback(async () => {
         setLoading(true);
         try {
@@ -33,14 +35,13 @@ const useDashboard = () => {
             setMonthlyRevenue(response.data.data);
             return response.data.data;
         } catch (err) {
-            setError(err.response?.data?.message || 'Không thể lấy dữ liệu doanh thu');
+            setError(err.response?.data?.message || 'Không thể lấy dữ liệu doanh thu hàng tháng');
             throw err;
         } finally {
             setLoading(false);
         }
     }, []);
 
-    // Lấy thống kê đơn hàng
     const fetchOrderStats = useCallback(async () => {
         setLoading(true);
         try {
@@ -55,7 +56,6 @@ const useDashboard = () => {
         }
     }, []);
 
-    // Lấy thống kê sản phẩm
     const fetchProductStats = useCallback(async () => {
         setLoading(true);
         try {
@@ -70,27 +70,63 @@ const useDashboard = () => {
         }
     }, []);
 
-    // Lấy tất cả dữ liệu dashboard
+    // Thêm các hàm mới
+    const fetchDailyRevenue = useCallback(async () => {
+        setLoading(true);
+        try {
+            const response = await dashboardService.getDailyRevenue();
+            setDailyRevenue(response.data.data);
+            return response.data.data;
+        } catch (err) {
+            setError(err.response?.data?.message || 'Không thể lấy dữ liệu doanh thu theo ngày');
+            throw err;
+        } finally {
+            setLoading(false);
+        }
+    }, []);
+
+    const fetchCategoryRevenue = useCallback(async () => {
+        setLoading(true);
+        try {
+            const response = await dashboardService.getCategoryRevenue();
+            setCategoryRevenue(response.data.data);
+            return response.data.data;
+        } catch (err) {
+            setError(err.response?.data?.message || 'Không thể lấy dữ liệu doanh thu theo danh mục');
+            throw err;
+        } finally {
+            setLoading(false);
+        }
+    }, []);
+
+    // Fetch tất cả dữ liệu
     const fetchAllDashboardData = useCallback(async () => {
         setLoading(true);
         try {
-            const [overviewRes, revenueRes, orderStatsRes, productStatsRes] = await Promise.all([
+            // Gọi API song song để cải thiện tốc độ
+            const [overviewRes, revenueRes, orderStatsRes, productStatsRes, dailyRevenueRes, categoryRevenueRes] = await Promise.all([
                 dashboardService.getDashboardOverview(),
                 dashboardService.getMonthlyRevenue(),
                 dashboardService.getOrderStats(),
                 dashboardService.getProductStats(),
+                dashboardService.getDailyRevenue(),
+                dashboardService.getCategoryRevenue()
             ]);
 
             setOverview(overviewRes.data.data);
             setMonthlyRevenue(revenueRes.data.data);
             setOrderStats(orderStatsRes.data.data);
             setProductStats(productStatsRes.data.data);
+            setDailyRevenue(dailyRevenueRes.data.data);
+            setCategoryRevenue(categoryRevenueRes.data.data);
 
             return {
                 overview: overviewRes.data.data,
                 monthlyRevenue: revenueRes.data.data,
                 orderStats: orderStatsRes.data.data,
-                productStats: productStatsRes.data.data
+                productStats: productStatsRes.data.data,
+                dailyRevenue: dailyRevenueRes.data.data,
+                categoryRevenue: categoryRevenueRes.data.data
             };
         } catch (err) {
             setError(err.response?.data?.message || 'Không thể lấy dữ liệu dashboard');
@@ -110,12 +146,16 @@ const useDashboard = () => {
         monthlyRevenue,
         orderStats,
         productStats,
+        dailyRevenue,
+        categoryRevenue,
         loading,
         error,
         fetchDashboardOverview,
         fetchMonthlyRevenue,
         fetchOrderStats,
         fetchProductStats,
+        fetchDailyRevenue,
+        fetchCategoryRevenue,
         fetchAllDashboardData,
         resetState
     };

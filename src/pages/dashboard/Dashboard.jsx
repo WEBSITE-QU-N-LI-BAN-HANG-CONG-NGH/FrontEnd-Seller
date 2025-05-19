@@ -1,109 +1,62 @@
 // src/pages/dashboard/Dashboard.jsx
+
 import { useState, useEffect } from "react";
 import {
     Package,
     ShoppingCart,
     Users,
-    ArrowUp,
-    ArrowDown,
     DollarSign,
     Calendar,
-    Zap,
-    Percent,
-    CreditCard,
     RefreshCcw,
-    UserPlus,
-    UserCheck,
 } from "lucide-react";
 import "../../styles/dashboard/dashboard.css";
 import useDashboard from "../../hooks/useDashboard";
 import { formatCurrency } from "../../utils/format.js";
 import LoadingSpinner from "../../components/common/LoadingSpinner";
 import ErrorAlert from "../../components/common/ErrorAlert";
+import RevenueChart from "./RevenueChart.jsx";
+import DailyRevenueChart from "./DailyRevenueChart.jsx";
+import CategoryRevenueChart from "./CategoryRevenueChart.jsx";
 
 function Dashboard() {
     const [selectedMonth, setSelectedMonth] = useState("Tháng 5, 2025");
-    const [activeTab, setActiveTab] = useState("overview");
+    const [activeTab, setActiveTab] = useState("monthly");
+
     const {
         overview,
         monthlyRevenue,
         orderStats,
         productStats,
+        dailyRevenue,
+        categoryRevenue,
         loading,
         error,
-        fetchAllDashboardData
+        fetchAllDashboardData,
+        fetchDailyRevenue,
+        fetchCategoryRevenue
     } = useDashboard();
 
-    // Fetch dữ liệu dashboard khi component mount
+    // Fetch dữ liệu khi component mount
     useEffect(() => {
         fetchAllDashboardData();
     }, [fetchAllDashboardData]);
 
-    if (loading) {
+    // Fetch dữ liệu theo tab khi cần thiết
+    useEffect(() => {
+        if (activeTab === "daily" && !dailyRevenue) {
+            fetchDailyRevenue();
+        } else if (activeTab === "category" && !categoryRevenue) {
+            fetchCategoryRevenue();
+        }
+    }, [activeTab, dailyRevenue, categoryRevenue, fetchDailyRevenue, fetchCategoryRevenue]);
+
+    if (loading && !overview) {
         return <LoadingSpinner />;
     }
 
     if (error) {
         return <ErrorAlert message={error} />;
     }
-
-    // Chuyển đổi dữ liệu doanh thu theo tháng để hiển thị trên biểu đồ
-    const revenueChartData = monthlyRevenue ? Object.entries(monthlyRevenue).map(([month, amount]) => ({
-        month,
-        amount: amount
-    })) : [];
-
-    // Dữ liệu phân tích chi tiết
-    const analyticsData = [
-        {
-            metric: "Tỷ lệ chuyển đổi",
-            value: "12.5%",
-            change: "+4%",
-            status: "increase",
-            icon: <Percent className="icon-small" />,
-            color: "blue",
-        },
-        {
-            metric: "Giá trị đơn hàng trung bình",
-            value: overview ? formatCurrency(overview.totalRevenue / overview.totalOrders) : "0 ₫",
-            change: "+8%",
-            status: "increase",
-            icon: <CreditCard className="icon-small" />,
-            color: "purple",
-        },
-        {
-            metric: "Tỷ lệ hoàn trả",
-            value: "2.3%",
-            change: "-0.5%",
-            status: "decrease",
-            icon: <RefreshCcw className="icon-small" />,
-            color: "amber",
-        },
-        {
-            metric: "Tỷ lệ hủy đơn hàng",
-            value: orderStats ? `${(orderStats.cancelled / orderStats.total * 100).toFixed(1)}%` : "0%",
-            change: "+1.1%",
-            status: "increase",
-            icon: <ShoppingCart className="icon-small" />,
-            color: "red",
-        },
-        {
-            metric: "Khách hàng mới",
-            value: "1,245",
-            change: "+15%",
-            status: "increase",
-            icon: <UserPlus className="icon-small" />,
-            color: "green",
-        },
-        {
-            metric: "Khách hàng quay lại",
-            value: "1,105",
-            change: "+22%",
-            status: "increase",
-            icon: <UserCheck className="icon-small" />,
-            color: "indigo",
-        },
-    ];
 
     return (
         <div className="dashboard-page">
@@ -114,7 +67,11 @@ function Dashboard() {
                 <div className="header-actions">
                     <div className="month-selector">
                         <Calendar className="icon-small" />
-                        <select value={selectedMonth} onChange={(e) => setSelectedMonth(e.target.value)} className="month-select">
+                        <select
+                            value={selectedMonth}
+                            onChange={(e) => setSelectedMonth(e.target.value)}
+                            className="month-select"
+                        >
                             <option value="Tháng 5, 2025">Tháng 5, 2025</option>
                             <option value="Tháng 4, 2025">Tháng 4, 2025</option>
                             <option value="Tháng 3, 2025">Tháng 3, 2025</option>
@@ -169,7 +126,7 @@ function Dashboard() {
                             <Users className="icon-small" />
                         </div>
                     </div>
-                    <div className="stat-value">0</div>
+                    <div className="stat-value">{overview?.customerCount || 0}</div>
                 </div>
             </div>
 
@@ -177,118 +134,78 @@ function Dashboard() {
                 <div className="tabs-list">
                     <button
                         type="button"
-                        className={`tab-button ${activeTab === "overview" ? "active" : ""}`}
-                        onClick={() => setActiveTab("overview")}
+                        className={`tab-button ${activeTab === "monthly" ? "active" : ""}`}
+                        onClick={() => setActiveTab("monthly")}
                     >
-                        Tổng quan
+                        Doanh thu theo tháng
                     </button>
                     <button
                         type="button"
-                        className={`tab-button ${activeTab === "products" ? "active" : ""}`}
-                        onClick={() => setActiveTab("products")}
+                        className={`tab-button ${activeTab === "daily" ? "active" : ""}`}
+                        onClick={() => setActiveTab("daily")}
                     >
-                        Doanh thu
+                        Doanh thu theo ngày
+                    </button>
+                    <button
+                        type="button"
+                        className={`tab-button ${activeTab === "category" ? "active" : ""}`}
+                        onClick={() => setActiveTab("category")}
+                    >
+                        Doanh thu theo danh mục
                     </button>
                 </div>
 
                 <div className="tab-content">
-                    {activeTab === "overview" && (
+                    {activeTab === "monthly" && (
                         <div className="card">
                             <div className="card-header">
                                 <h2 className="card-title">Doanh thu theo tháng</h2>
+                                <p className="card-description">
+                                    Biểu đồ thể hiện doanh thu của cửa hàng theo từng tháng
+                                </p>
                             </div>
                             <div className="card-content">
-                                <div className="chart-container">
-                                    <div className="bar-chart">
-                                        {revenueChartData.map((data, index) => (
-                                            <div key={index} className="chart-column">
-                                                <div
-                                                    className={`bar ${index === 2 ? "highlight" : ""}`}
-                                                    style={{
-                                                        height: `${data.amount ? (data.amount / Math.max(...revenueChartData.map(d => d.amount))) * 220 : 0}px`,
-                                                    }}
-                                                >
-                                                    {index === 2 && <div className="bar-tooltip">{formatCurrency(data.amount)}</div>}
-                                                </div>
-                                                <div className="bar-label">{data.month}</div>
-                                            </div>
-                                        ))}
+                                <RevenueChart data={monthlyRevenue} />
+                            </div>
+                        </div>
+                    )}
+
+                    {activeTab === "daily" && (
+                        <div className="card">
+                            <div className="card-header">
+                                <h2 className="card-title">Doanh thu theo ngày</h2>
+                                <p className="card-description">
+                                    Biểu đồ thể hiện doanh thu của cửa hàng trong 15 ngày gần nhất
+                                </p>
+                            </div>
+                            <div className="card-content">
+                                {loading ? (
+                                    <div className="loading-container small">
+                                        <LoadingSpinner />
                                     </div>
-                                </div>
+                                ) : (
+                                    <DailyRevenueChart data={dailyRevenue} />
+                                )}
                             </div>
                         </div>
                     )}
 
-                    {activeTab === "analytics" && (
+                    {activeTab === "category" && (
                         <div className="card">
                             <div className="card-header">
-                                <h2 className="card-title">Phân tích chi tiết</h2>
-                                <p className="card-description">Thông tin phân tích chi tiết về doanh thu của cửa hàng</p>
+                                <h2 className="card-title">Doanh thu theo danh mục sản phẩm</h2>
+                                <p className="card-description">
+                                    Biểu đồ thể hiện phân bổ doanh thu theo từng danh mục sản phẩm
+                                </p>
                             </div>
                             <div className="card-content">
-                                <div className="analytics-grid">
-                                    {analyticsData.map((item, index) => (
-                                        <div key={index} className={`analytics-card ${item.color}`}>
-                                            <div className="analytics-header">
-                                                <h3 className="analytics-title">{item.metric}</h3>
-                                                <div className={`analytics-icon ${item.color}`}>{item.icon}</div>
-                                            </div>
-                                            <div className="analytics-value">{item.value}</div>
-                                            <div
-                                                className={`analytics-change ${item.status === "increase" ? (item.metric.includes("hủy") || item.metric.includes("hoàn") ? "negative" : "positive") : item.metric.includes("hủy") || item.metric.includes("hoàn") ? "positive" : "negative"}`}
-                                            >
-                                                {item.status === "increase" ? (
-                                                    <ArrowUp className="icon-tiny" />
-                                                ) : (
-                                                    <ArrowDown className="icon-tiny" />
-                                                )}
-                                                <span>{item.change} so với tháng trước</span>
-                                            </div>
-                                        </div>
-                                    ))}
-                                </div>
-                            </div>
-                        </div>
-                    )}
-
-                    {activeTab === "products" && (
-                        <div className="card">
-                            <div className="card-header">
-                                <h2 className="card-title">Doanh thu theo sản phẩm</h2>
-                                <p className="card-description">Phân tích doanh thu theo từng sản phẩm</p>
-                            </div>
-                            <div className="card-content">
-                                {/* Nội dung tab doanh thu theo sản phẩm */}
-                                <div className="products-table-container">
-                                    <table className="products-table">
-                                        <thead>
-                                        <tr>
-                                            <th>Sản phẩm</th>
-                                            <th>Danh mục</th>
-                                            <th className="text-center">Đã bán</th>
-                                            <th className="text-right">Doanh thu</th>
-                                            <th className="text-right">% Tổng</th>
-                                        </tr>
-                                        </thead>
-                                        <tbody>
-                                        {overview && overview.recentOrders ? overview.recentOrders.map((order, index) => (
-                                            <tr key={index}>
-                                                <td className="product-name">{order.customerName}</td>
-                                                <td>
-                                                    <span className="category-badge">Đơn hàng</span>
-                                                </td>
-                                                <td className="text-center">1</td>
-                                                <td className="text-right">{formatCurrency(order.totalAmount)}</td>
-                                                <td className="text-right">
-                                                    <span className={`percent-badge blue`}>
-                                                        {((order.totalAmount / overview.totalRevenue) * 100).toFixed(1)}%
-                                                    </span>
-                                                </td>
-                                            </tr>
-                                        )) : null}
-                                        </tbody>
-                                    </table>
-                                </div>
+                                {loading ? (
+                                    <div className="loading-container small">
+                                        <LoadingSpinner />
+                                    </div>
+                                ) : (
+                                    <CategoryRevenueChart data={categoryRevenue} />
+                                )}
                             </div>
                         </div>
                     )}

@@ -311,17 +311,20 @@ function Profile() {
                                             <label htmlFor="email" className="form-label">
                                                 Email liên hệ
                                             </label>
-                                            <div className="input-icon">
-                                                <Mail className="icon-small" />
+                                            <div className="input-with-icon">
+                                                <div className="input-icon">
+                                                    <Mail className="icon-small" />
+                                                </div>
+                                                <input
+                                                    id="email"
+                                                    name="email"
+                                                    className={`form-input with-icon ${formErrors.email ? 'error' : ''}`}
+                                                    value={formData.email}
+                                                    disabled
+                                                    readOnly
+                                                />
                                             </div>
-                                            <input
-                                                id="email"
-                                                name="email"
-                                                className={`form-input with-icon ${formErrors.email ? 'error' : ''}`}
-                                                value={formData.email}
-                                                disabled
-                                                readOnly
-                                            />
+                                            {formErrors.email && <div className="form-error">{formErrors.email}</div>}
                                         </div>
                                         {formErrors.email && <div className="form-error">{formErrors.email}</div>}
                                     </div>

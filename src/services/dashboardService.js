@@ -1,4 +1,5 @@
 // src/services/dashboardService.js
+
 import api from '../config/Api.js';
 
 const dashboardService = {
@@ -16,6 +17,15 @@ const dashboardService = {
 
     getProductStats: () => {
         return api.get('/seller/dashboard/products/stats');
+    },
+
+    // Thêm các endpoints mới
+    getDailyRevenue: () => {
+        return api.get('/seller/dashboard/revenue/daily');
+    },
+
+    getCategoryRevenue: () => {
+        return api.get('/seller/dashboard/revenue/category');
     }
 };
 
