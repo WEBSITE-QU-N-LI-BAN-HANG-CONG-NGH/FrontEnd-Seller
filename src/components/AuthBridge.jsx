@@ -1,10 +1,11 @@
+// src/components/AuthBridge.jsx
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import api from '../config/Api.js';
 import LoadingSpinner from './common/LoadingSpinner';
 
 // Key thống nhất để lưu token giữa customer và seller
-const TOKEN_KEY = 'accessToken';
+const TOKEN_KEY = 'jwt'; // Đảm bảo sử dụng 'jwt' thay vì 'accessToken'
 // Debug mode - tắt chuyển hướng
 const DEBUG_MODE = true;
 
@@ -69,6 +70,24 @@ const AuthBridge = ({ children }) => {
                             const payload = JSON.parse(atob(parts[1]));
                             console.log('JWT payload:', payload);
                             debugData.tokenPayload = payload;
+
+                            // Kiểm tra trực tiếp payload có role SELLER không
+                            if (payload.roles && Array.isArray(payload.roles) &&
+                                payload.roles.includes("SELLER")) {
+                                console.log('Token hợp lệ và có quyền SELLER, bỏ qua gọi API');
+
+                                // Nếu token hợp lệ và có quyền SELLER, không cần gọi API nữa
+                                setDebugInfo({
+                                    ...debugData,
+                                    tokenAnalysis: {
+                                        isSeller: true,
+                                        method: 'JWT direct check'
+                                    }
+                                });
+
+                                setIsAuthChecking(false);
+                                return; // Thoát sớm, không gọi API
+                            }
                         }
                     } catch (e) {
                         console.error('Lỗi khi phân tích JWT:', e);
@@ -76,65 +95,68 @@ const AuthBridge = ({ children }) => {
                     }
                 }
 
-                // Bước 3: Kiểm tra quyền seller
+                // Bước 3: Kiểm tra quyền seller, chỉ gọi một endpoint duy nhất
                 if (token) {
                     try {
                         // Đặt token vào header cho request
                         api.defaults.headers.common['Authorization'] = `Bearer ${token}`;
 
-                        // Gọi API xác thực seller
-                        const endpoints = [
-                            '/seller/verify-role',
-                            '/api/v1/seller/verify-role',
-                            '/users/profile',
-                            '/api/v1/users/profile'
-                        ];
+                        // Chỉ gọi một API endpoint thay vì nhiều endpoint
+                        try {
+                            console.log('Gọi API xác thực seller');
+                            const response = await api.get('/seller/verify-role');
+                            console.log('Phản hồi từ verify-role:', response.data);
 
-                        for (const endpoint of endpoints) {
-                            try {
-                                console.log(`Thử gọi API: ${endpoint}`);
-                                const response = await api.get('/seller/verify-role');
-                                console.log(`Phản hồi từ ${endpoint}:`, response.data);
+                            debugData.apiResponses.push({
+                                endpoint: '/seller/verify-role',
+                                status: response.status,
+                                data: response.data
+                            });
 
+                            // Kiểm tra xem có phải seller không
+                            const isSeller = checkIfSeller(response.data);
+                            debugData.isSeller = isSeller;
+
+                            if (!isSeller && !DEBUG_MODE) {
+                                setAuthError('Bạn không có quyền seller để truy cập trang quản lý');
+                                redirectToCustomerLogin();
+                                return;
+                            }
+                        } catch (error) {
+                            console.error('Lỗi khi gọi API xác thực:', error);
+                            debugData.errors.push(`Lỗi khi gọi API xác thực: ${error.message}`);
+
+                            if (error.response) {
                                 debugData.apiResponses.push({
-                                    endpoint,
-                                    status: response.status,
-                                    data: response.data
+                                    endpoint: '/seller/verify-role',
+                                    status: error.response.status,
+                                    error: error.response.data
                                 });
+                            }
 
-                                // Kiểm tra xem có phải seller không
-                                const isSeller = checkIfSeller(response.data);
-                                if (isSeller) {
-                                    console.log(`Xác thực seller thành công qua endpoint ${endpoint}`);
-                                    break;
-                                }
-                            } catch (error) {
-                                console.error(`Lỗi khi gọi ${endpoint}:`, error);
-                                debugData.errors.push(`Lỗi khi gọi ${endpoint}: ${error.message}`);
+                            // Nếu lỗi 429 (rate limit) thì xác thực trực tiếp từ JWT
+                            if (error.response && error.response.status === 429) {
+                                console.log('Bị rate limit, kiểm tra JWT trực tiếp');
+                                if (debugData.tokenPayload) {
+                                    const isSeller = isSellerFromToken(token);
+                                    console.log('Xác thực quyền seller từ JWT payload:', isSeller);
+                                    debugData.tokenAnalysis = {
+                                        isSeller,
+                                        method: 'JWT direct check (rate limited)'
+                                    };
 
-                                if (error.response) {
-                                    debugData.apiResponses.push({
-                                        endpoint,
-                                        status: error.response.status,
-                                        error: error.response.data
-                                    });
+                                    // Nếu không phải seller và không ở DEBUG_MODE
+                                    if (!isSeller && !DEBUG_MODE) {
+                                        setAuthError('Bạn không có quyền seller để truy cập trang quản lý');
+                                        redirectToCustomerLogin();
+                                        return;
+                                    }
                                 }
                             }
                         }
-
                     } catch (error) {
-                        console.error('Lỗi khi kiểm tra quyền seller:', error);
-                        debugData.errors.push(`Lỗi khi kiểm tra quyền seller: ${error.message}`);
-
-                        // Dùng phương pháp dự phòng: Kiểm tra token JWT trực tiếp
-                        if (debugData.tokenPayload) {
-                            const isSeller = isSellerFromToken(token);
-                            console.log('Xác thực quyền seller từ JWT payload:', isSeller);
-                            debugData.tokenAnalysis = {
-                                isSeller,
-                                method: 'JWT direct check'
-                            };
-                        }
+                        console.error('Lỗi tổng quát khi kiểm tra quyền:', error);
+                        debugData.errors.push(`Lỗi tổng quát: ${error.message}`);
                     }
                 }
 
@@ -149,7 +171,6 @@ const AuthBridge = ({ children }) => {
                 }
 
                 // Logic bình thường (khi không trong DEBUG_MODE)
-                // ...các logic xác thực và chuyển hướng thông thường
                 setIsAuthChecking(false);
 
             } catch (error) {
@@ -193,9 +214,8 @@ const AuthBridge = ({ children }) => {
             console.log('JWT payload:', payload);
 
             // Kiểm tra vai trò từ payload
-            const roles = payload.roles || payload.authorities || [];
-            if (Array.isArray(roles)) {
-                return roles.includes('SELLER') || roles.includes('ROLE_SELLER');
+            if (payload.roles && Array.isArray(payload.roles)) {
+                return payload.roles.includes('SELLER') || payload.roles.includes('ROLE_SELLER');
             }
 
             // Trường hợp role là string
@@ -261,6 +281,15 @@ const AuthBridge = ({ children }) => {
                         <pre style={{background: '#eee', padding: '10px'}}>
                             {JSON.stringify(debugInfo.tokenPayload, null, 2)}
                         </pre>
+
+                        {debugInfo.tokenAnalysis && (
+                            <div>
+                                <p style={{color: debugInfo.tokenAnalysis.isSeller ? 'green' : 'red'}}>
+                                    <strong>Phân tích JWT:</strong> {debugInfo.tokenAnalysis.isSeller ? '✅ Có quyền SELLER' : '❌ Không có quyền SELLER'}
+                                </p>
+                                <p><strong>Phương thức kiểm tra:</strong> {debugInfo.tokenAnalysis.method}</p>
+                            </div>
+                        )}
                     </div>
                 )}
 
@@ -291,20 +320,23 @@ const AuthBridge = ({ children }) => {
 
                 <div style={{marginTop: '30px'}}>
                     <button
-                        onClick={() => window.location.reload()}
-                        style={{padding: '10px 15px', marginRight: '10px'}}
+                        onClick={() => {
+                            localStorage.removeItem(TOKEN_KEY);
+                            window.location.reload();
+                        }}
+                        style={{padding: '10px 15px', marginRight: '10px', backgroundColor: '#ff4d4f', color: 'white', border: 'none'}}
                     >
-                        Thử lại
+                        Xóa token và thử lại
                     </button>
                     <button
                         onClick={() => navigate('/dashboard')}
-                        style={{padding: '10px 15px', marginRight: '10px'}}
+                        style={{padding: '10px 15px', marginRight: '10px', backgroundColor: '#1890ff', color: 'white', border: 'none'}}
                     >
-                        Vào trang Dashboard
+                        Bỏ qua và vào Dashboard
                     </button>
                     <button
                         onClick={() => window.location.href = 'http://localhost:5173/login?redirect=seller'}
-                        style={{padding: '10px 15px'}}
+                        style={{padding: '10px 15px', border: '1px solid #d9d9d9'}}
                     >
                         Đi tới trang đăng nhập Customer
                     </button>
