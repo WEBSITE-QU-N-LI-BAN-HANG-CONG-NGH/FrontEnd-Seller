@@ -3,7 +3,7 @@
  */
 
 // Key thống nhất cho token trong localStorage
-export const TOKEN_KEY = 'accessToken';
+export const TOKEN_KEY = 'jwt';
 
 /**
  * Lấy token từ localStorage
@@ -77,19 +77,49 @@ export const decodeToken = (token) => {
  */
 export const isSellerFromToken = (token) => {
     try {
-        const payload = decodeToken(token);
-        if (!payload) return false;
+        const parts = token.split('.');
+        if (parts.length !== 3) return false;
+
+        const payload = JSON.parse(atob(parts[1]));
+        console.log('JWT payload:', payload);
+
+        // In ra chi tiết để debug
+        if (payload.roles) console.log('roles từ payload:', payload.roles);
+        if (payload.role) console.log('role từ payload:', payload.role);
+        if (payload.authorities) console.log('authorities từ payload:', payload.authorities);
 
         // Kiểm tra vai trò từ payload
-        const roles = payload.roles || payload.authorities || [];
-        if (Array.isArray(roles)) {
-            return roles.includes('SELLER') || roles.includes('ROLE_SELLER');
+        // Trường hợp roles là array
+        if (payload.roles && Array.isArray(payload.roles)) {
+            if (payload.roles.includes('SELLER') || payload.roles.includes('ROLE_SELLER')) {
+                console.log('Tìm thấy SELLER trong mảng roles');
+                return true;
+            }
         }
 
         // Trường hợp role là string
-        return payload.role === 'SELLER' || payload.role === 'ROLE_SELLER';
-    } catch (error) {
-        console.error('Lỗi khi kiểm tra quyền seller từ token:', error);
+        if (payload.role === 'SELLER' || payload.role === 'ROLE_SELLER') {
+            console.log('Tìm thấy SELLER trong role string');
+            return true;
+        }
+
+        // Trường hợp authorities là array của objects
+        if (payload.authorities && Array.isArray(payload.authorities)) {
+            for (const auth of payload.authorities) {
+                if (
+                    (typeof auth === 'string' && (auth === 'SELLER' || auth === 'ROLE_SELLER')) ||
+                    (auth.authority && (auth.authority === 'SELLER' || auth.authority === 'ROLE_SELLER'))
+                ) {
+                    console.log('Tìm thấy SELLER trong authorities');
+                    return true;
+                }
+            }
+        }
+
+        console.log('Không tìm thấy quyền SELLER trong token');
+        return false;
+    } catch (e) {
+        console.error('Lỗi khi phân tích JWT:', e);
         return false;
     }
 };
