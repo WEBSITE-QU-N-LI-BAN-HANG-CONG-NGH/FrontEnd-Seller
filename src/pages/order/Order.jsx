@@ -206,10 +206,6 @@ function Order() {
                                 <Calendar className="icon-small" />
                                 Ngày
                             </button>
-                            <button className="button outline small">
-                                <Download className="icon-small" />
-                                Xuất
-                            </button>
                         </div>
                     </div>
 

@@ -126,7 +126,7 @@ function Dashboard() {
                             <Users className="icon-small" />
                         </div>
                     </div>
-                    <div className="stat-value">{overview?.customerCount || 0}</div>
+                    <div className="stat-value">{overview ? overview.totalCustomers : 0}</div>
                 </div>
             </div>
 
