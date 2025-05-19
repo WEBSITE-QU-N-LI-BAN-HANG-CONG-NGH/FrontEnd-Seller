@@ -309,7 +309,6 @@ function AddProduct() {
                             <div className="card">
                                 <div className="card-header">
                                     <h2 className="card-title">Thông tin cơ bản</h2>
-                                    <p className="card-description">Nhập thông tin cơ bản của sản phẩm</p>
                                 </div>
                                 <div className="card-content">
                                     <div className="form-row">
@@ -510,48 +509,6 @@ function AddProduct() {
                                             Thêm kích thước
                                         </button>
                                     </div>
-
-                                    <div className="separator"></div>
-
-                                    <div className="toggle-options">
-                                        <div className="toggle-group">
-                                            <div className="toggle-info">
-                                                <label htmlFor="featured" className="toggle-label">
-                                                    Sản phẩm nổi bật
-                                                </label>
-                                                <p className="toggle-description">Sản phẩm sẽ được hiển thị ở trang chủ</p>
-                                            </div>
-                                            <label className="toggle">
-                                                <input
-                                                    type="checkbox"
-                                                    id="featured"
-                                                    name="featured"
-                                                    checked={productData.featured}
-                                                    onChange={handleInputChange}
-                                                />
-                                                <span className="toggle-slider"></span>
-                                            </label>
-                                        </div>
-
-                                        <div className="toggle-group">
-                                            <div className="toggle-info">
-                                                <label htmlFor="active" className="toggle-label">
-                                                    Trạng thái
-                                                </label>
-                                                <p className="toggle-description">Sản phẩm sẽ được hiển thị trên website</p>
-                                            </div>
-                                            <label className="toggle">
-                                                <input
-                                                    type="checkbox"
-                                                    id="active"
-                                                    name="active"
-                                                    checked={productData.active}
-                                                    onChange={handleInputChange}
-                                                />
-                                                <span className="toggle-slider"></span>
-                                            </label>
-                                        </div>
-                                    </div>
                                 </div>
                             </div>
                         )}
@@ -560,7 +517,6 @@ function AddProduct() {
                             <div className="card">
                                 <div className="card-header">
                                     <h2 className="card-title">Thông số kỹ thuật</h2>
-                                    <p className="card-description">Thêm thông số kỹ thuật chi tiết của sản phẩm</p>
                                 </div>
                                 <div className="card-content">
                                     <div className="specs-table">
@@ -626,7 +582,6 @@ function AddProduct() {
                             <div className="card">
                                 <div className="card-header">
                                     <h2 className="card-title">Hình ảnh sản phẩm</h2>
-                                    <p className="card-description">Tải lên hình ảnh sản phẩm (tối đa 8 hình ảnh)</p>
                                 </div>
                                 <div className="card-content">
                                     <div className="image-gallery">
@@ -672,17 +627,6 @@ function AddProduct() {
                                         )}
                                     </div>
 
-                                    <div className="alert info">
-                                        <Info className="icon-small" />
-                                        <div className="alert-content">
-                                            <ul className="info-list">
-                                                <li>Hình ảnh đầu tiên sẽ được sử dụng làm ảnh chính của sản phẩm</li>
-                                                <li>Kích thước hình ảnh tối ưu: 800x800 pixel</li>
-                                                <li>Định dạng hỗ trợ: JPG, PNG, WEBP</li>
-                                                <li>Dung lượng tối đa: 2MB mỗi hình ảnh</li>
-                                            </ul>
-                                        </div>
-                                    </div>
                                 </div>
                             </div>
                         )}

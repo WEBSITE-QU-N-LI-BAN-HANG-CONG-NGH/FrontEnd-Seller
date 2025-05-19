@@ -193,8 +193,6 @@ function Profile() {
     return (
         <div className="profile-page">
             <h1 className="page-title">Hồ sơ</h1>
-            <p className="page-description">Quản lý thông tin cửa hàng và tài khoản của bạn</p>
-
             {formErrors.submit && (
                 <div className="alert danger">
                     <AlertCircle className="icon-small" />
@@ -218,12 +216,6 @@ function Profile() {
                     >
                         Tài khoản
                     </button>
-                    <button
-                        className={`tab-button ${activeTab === "payment" ? "active" : ""}`}
-                        onClick={() => setActiveTab("payment")}
-                    >
-                        VNPay
-                    </button>
                 </div>
 
                 <div className="tab-content">
@@ -231,7 +223,6 @@ function Profile() {
                         <div className="card">
                             <div className="card-header">
                                 <h2 className="card-title">Thông tin cửa hàng</h2>
-                                <p className="card-description">Quản lý thông tin cửa hàng của bạn hiển thị cho khách hàng</p>
                             </div>
                             <div className="card-content">
                                 <div className="store-info">
@@ -328,8 +319,8 @@ function Profile() {
                                                 name="email"
                                                 className={`form-input with-icon ${formErrors.email ? 'error' : ''}`}
                                                 value={formData.email}
-                                                onChange={handleChange}
-                                                disabled={true}
+                                                disabled
+                                                readOnly
                                             />
                                         </div>
                                         {formErrors.email && <div className="form-error">{formErrors.email}</div>}
@@ -377,51 +368,6 @@ function Profile() {
                             </div>
 
                             <div className="separator"></div>
-
-                            <div className="business-info">
-                                <h3 className="section-title">Thông tin doanh nghiệp</h3>
-
-                                <div className="form-grid">
-                                    <div className="form-group">
-                                        <label htmlFor="businessType" className="form-label">
-                                            Loại hình kinh doanh
-                                        </label>
-                                        <select
-                                            id="businessType"
-                                            name="businessType"
-                                            className="form-select"
-                                            value={formData.businessType}
-                                            onChange={handleChange}
-                                            disabled={!isEditing}
-                                        >
-                                            <option value="">Chọn loại hình kinh doanh</option>
-                                            <option value="Cá nhân">Cá nhân</option>
-                                            <option value="Doanh nghiệp">Doanh nghiệp</option>
-                                            <option value="Hộ kinh doanh">Hộ kinh doanh</option>
-                                        </select>
-                                    </div>
-
-                                    <div className="form-group">
-                                        <label htmlFor="phoneNumber" className="form-label">
-                                            Số điện thoại doanh nghiệp
-                                        </label>
-                                        <div className="input-with-icon">
-                                            <div className="input-icon">
-                                                <Building className="icon-small" />
-                                            </div>
-                                            <input
-                                                id="phoneNumber"
-                                                name="phoneNumber"
-                                                className={`form-input with-icon ${formErrors.phoneNumber ? 'error' : ''}`}
-                                                value={formData.phoneNumber}
-                                                onChange={handleChange}
-                                                disabled={!isEditing}
-                                            />
-                                        </div>
-                                        {formErrors.phoneNumber && <div className="form-error">{formErrors.phoneNumber}</div>}
-                                    </div>
-                                </div>
-                            </div>
                         <div className="card-footer">
                     {isEditing ? (
                         <>
@@ -446,7 +392,6 @@ function Profile() {
         <div className="card">
             <div className="card-header">
                 <h2 className="card-title">Thông tin tài khoản</h2>
-                <p className="card-description">Quản lý thông tin đăng nhập và bảo mật tài khoản</p>
             </div>
             <div className="card-content">
                 <div className="account-info">
@@ -532,97 +477,6 @@ function Profile() {
                     <Save className="icon-small" />
                     Lưu thay đổi
                 </button>
-            </div>
-        </div>
-    )}
-
-{activeTab === "payment" && (
-        <div className="card">
-            <div className="card-header">
-                <h2 className="card-title">Thông tin VNPay</h2>
-                <p className="card-description">Quản lý thông tin tài khoản VNPay để nhận thanh toán</p>
-            </div>
-            <div className="card-content">
-                <div className="vnpay-info">
-                    <div className="form-group">
-                        <label htmlFor="merchantId" className="form-label">
-                            Mã đơn vị (Merchant ID)
-                        </label>
-                        <input
-                            id="merchantId"
-                            name="merchantId"
-                            className="form-input"
-                            value={formData.merchantId}
-                            onChange={handleChange}
-                            disabled={!isEditing}
-                        />
-                    </div>
-
-                    <div className="form-group">
-                        <label htmlFor="terminalId" className="form-label">
-                            Mã terminal
-                        </label>
-                        <div className="input-with-icon">
-                            <div className="input-icon">
-                                <CreditCard className="icon-small" />
-                            </div>
-                            <input
-                                id="terminalId"
-                                name="terminalId"
-                                className="form-input with-icon"
-                                value={formData.terminalId}
-                                onChange={handleChange}
-                                disabled={!isEditing}
-                            />
-                        </div>
-                    </div>
-
-                    <div className="form-group">
-                        <label htmlFor="secretKey" className="form-label">
-                            Mã bí mật (Secret Key)
-                        </label>
-                        <input
-                            id="secretKey"
-                            name="secretKey"
-                            type="password"
-                            className="form-input"
-                            value={formData.secretKey}
-                            onChange={handleChange}
-                            disabled={!isEditing}
-                        />
-                    </div>
-
-                    <div className="form-group">
-                        <label htmlFor="callbackUrl" className="form-label">
-                            URL callback
-                        </label>
-                        <input
-                            id="callbackUrl"
-                            name="callbackUrl"
-                            className="form-input"
-                            value={formData.callbackUrl}
-                            onChange={handleChange}
-                            disabled={!isEditing}
-                        />
-                    </div>
-                </div>
-            </div>
-            <div className="card-footer">
-                {isEditing ? (
-                    <>
-                        <button className="button outline" onClick={() => setIsEditing(false)}>
-                            Hủy
-                        </button>
-                        <button className="button primary" onClick={handleSave}>
-                            <Save className="icon-small" />
-                            Lưu thay đổi
-                        </button>
-                    </>
-                ) : (
-                    <button className="button primary" onClick={() => setIsEditing(true)}>
-                        Chỉnh sửa thông tin
-                    </button>
-                )}
             </div>
         </div>
     )}

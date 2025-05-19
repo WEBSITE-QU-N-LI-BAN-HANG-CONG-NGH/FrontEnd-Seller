@@ -157,9 +157,7 @@ function Order() {
             <div className="card">
                 <div className="card-header">
                     <h2 className="card-title">Danh sách đơn hàng</h2>
-                    <p className="card-description">Quản lý và theo dõi tất cả đơn hàng của cửa hàng</p>
                 </div>
-                // src/pages/order/Order.jsx (tiếp tục)
                 <div className="card-content">
                     <div className="filters">
                         <div className="search-container">

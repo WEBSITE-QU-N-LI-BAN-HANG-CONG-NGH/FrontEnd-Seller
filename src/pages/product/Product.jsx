@@ -114,7 +114,6 @@ function Product() {
             <div className="card">
                 <div className="card-header">
                     <h2 className="card-title">Danh sách sản phẩm</h2>
-                    <p className="card-description">Quản lý tất cả sản phẩm trong cửa hàng của bạn</p>
                 </div>
                 <div className="card-content">
                     <div className="filters">
@@ -132,10 +131,6 @@ function Product() {
                             <button className="button outline small">
                                 <SlidersHorizontal className="icon-small" />
                                 Lọc
-                            </button>
-                            <button className="button outline small">
-                                <Download className="icon-small" />
-                                Xuất
                             </button>
                         </div>
                     </div>

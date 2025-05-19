@@ -1,10 +1,11 @@
-// src/components/layout/DashboardLayout.jsx
+// src/components/layout/DashboardLayout.jsx (refactored)
 import { useLocation } from 'react-router-dom';
 import { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { LayoutDashboard, Package, ShoppingCart, User, LogOut, Menu } from 'lucide-react';
+import { LayoutDashboard, Package, ShoppingCart, User, LogOut, Menu, X } from 'lucide-react';
 import "../../styles/layout/layout.css";
 import useAuth from '../../hooks/useAuth';
+import api from "../../config/Api.js";
 
 function DashboardLayout({ children }) {
     const location = useLocation();
@@ -45,10 +46,20 @@ function DashboardLayout({ children }) {
     // Xử lý đăng xuất
     const handleLogout = async () => {
         try {
-            await logout();
-            navigate('/login');
+            // Gọi API logout
+            await api.post('/auth/logout');
         } catch (error) {
             console.error("Lỗi khi đăng xuất:", error);
+            // Tiếp tục xử lý ngay cả khi có lỗi
+        } finally {
+            // Xóa token và chuyển hướng bất kể kết quả API
+            localStorage.removeItem('jwt');
+            navigate('/login');
+
+            // Nếu vẫn gặp vấn đề, có thể thử chuyển hướng đến trang chính
+            setTimeout(() => {
+                window.location.href = 'http://localhost:5173/login';
+            }, 300);
         }
     };
 
@@ -86,10 +97,10 @@ function DashboardLayout({ children }) {
                                 alt="Avatar"
                                 onError={(e) => {
                                     e.target.style.display = 'none';
-                                    document.querySelector('.avatar-fallback').style.display = 'flex';
+                                    e.target.nextElementSibling.style.display = 'flex';  // Sửa reference đến phần tử
                                 }}
                             />
-                            <div className="avatar-fallback">
+                            <div className="avatar-fallback" style={{ display: 'none' }}>  // Set display: none by default
                                 {user ? (user.firstName?.charAt(0) || '') + (user.lastName?.charAt(0) || '') : 'TS'}
                             </div>
                         </div>
@@ -97,7 +108,7 @@ function DashboardLayout({ children }) {
                             <div className="user-name">
                                 {user ? `${user.firstName || ''} ${user.lastName || ''}` : 'Người dùng'}
                             </div>
-                            <div className="user-role">{user?.role || 'Seller'}</div>
+                            <div className="user-role">{user?.email || 'Email'}</div>  {/* Thay đổi role thành email */}
                         </div>
                         <button className="logout-button" onClick={handleLogout}>
                             <LogOut className="icon" />
@@ -111,11 +122,14 @@ function DashboardLayout({ children }) {
             <div className={`mobile-nav ${isMobileNavOpen ? "open" : ""}`}>
                 <div className="mobile-nav-overlay" onClick={() => setIsMobileNavOpen(false)}></div>
                 <div className="mobile-nav-content">
-                    <div className="sidebar-header">
+                    <div className="sidebar-header mobile-header">
                         <Link to="/dashboard" className="logo-link">
                             <Package className="logo-icon" />
                             <span>TechShop</span>
                         </Link>
+                        <button className="close-button" onClick={() => setIsMobileNavOpen(false)}>
+                            <X className="icon" />
+                        </button>
                     </div>
                     <nav className="sidebar-nav">
                         <ul className="nav-list">
@@ -136,15 +150,7 @@ function DashboardLayout({ children }) {
                     <div className="sidebar-footer">
                         <div className="user-info">
                             <div className="avatar">
-                                <img
-                                    src={user?.imageUrl || "/placeholder.svg?height=40&width=40"}
-                                    alt="Avatar"
-                                    onError={(e) => {
-                                        e.target.style.display = 'none';
-                                        document.querySelector('.mobile-avatar-fallback').style.display = 'flex';
-                                    }}
-                                />
-                                <div className="avatar-fallback mobile-avatar-fallback">
+                                <div className="avatar-fallback">
                                     {user ? (user.firstName?.charAt(0) || '') + (user.lastName?.charAt(0) || '') : 'TS'}
                                 </div>
                             </div>
@@ -168,25 +174,8 @@ function DashboardLayout({ children }) {
                 <span className="sr-only">Mở menu</span>
             </button>
 
-            {/* Main Content */}
+            {/* Main Content - đã bỏ phần header */}
             <main className="main-content">
-                <div className="main-header">
-                    <div className="header-actions">
-                        <div className="avatar small">
-                            <img
-                                src={user?.imageUrl || "/placeholder.svg?height=32&width=32"}
-                                alt="Avatar"
-                                onError={(e) => {
-                                    e.target.style.display = 'none';
-                                    document.querySelector('.header-avatar-fallback').style.display = 'flex';
-                                }}
-                            />
-                            <div className="avatar-fallback header-avatar-fallback">
-                                {user ? (user.firstName?.charAt(0) || '') + (user.lastName?.charAt(0) || '') : 'TS'}
-                            </div>
-                        </div>
-                    </div>
-                </div>
                 <div className="content-container">{children}</div>
             </main>
         </div>

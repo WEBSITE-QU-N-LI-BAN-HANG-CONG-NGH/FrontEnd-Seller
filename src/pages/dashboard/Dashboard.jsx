@@ -110,7 +110,6 @@ function Dashboard() {
             <div className="dashboard-header">
                 <div className="header-info">
                     <h1 className="page-title gradient-text">Dashboard</h1>
-                    <p className="page-description">Xem tổng quan về cửa hàng của bạn</p>
                 </div>
                 <div className="header-actions">
                     <div className="month-selector">
@@ -141,10 +140,6 @@ function Dashboard() {
                     <div className="stat-value">
                         {overview ? formatCurrency(overview.totalRevenue) : "0 ₫"}
                     </div>
-                    <div className="stat-change positive">
-                        <ArrowUp className="icon-tiny" />
-                        <span>20% so với tháng trước</span>
-                    </div>
                 </div>
 
                 <div className="stat-card blue">
@@ -155,10 +150,6 @@ function Dashboard() {
                         </div>
                     </div>
                     <div className="stat-value">+{overview ? overview.totalOrders : 0}</div>
-                    <div className="stat-change positive">
-                        <ArrowUp className="icon-tiny" />
-                        <span>12% so với tháng trước</span>
-                    </div>
                 </div>
 
                 <div className="stat-card green">
@@ -169,10 +160,6 @@ function Dashboard() {
                         </div>
                     </div>
                     <div className="stat-value">{overview ? overview.totalProducts : 0}</div>
-                    <div className="stat-change neutral">
-                        <Zap className="icon-tiny amber" />
-                        <span>+4 sản phẩm mới</span>
-                    </div>
                 </div>
 
                 <div className="stat-card purple">
@@ -182,11 +169,7 @@ function Dashboard() {
                             <Users className="icon-small" />
                         </div>
                     </div>
-                    <div className="stat-value">+2350</div>
-                    <div className="stat-change positive">
-                        <ArrowUp className="icon-tiny" />
-                        <span>18% so với tháng trước</span>
-                    </div>
+                    <div className="stat-value">0</div>
                 </div>
             </div>
 
@@ -198,13 +181,6 @@ function Dashboard() {
                         onClick={() => setActiveTab("overview")}
                     >
                         Tổng quan
-                    </button>
-                    <button
-                        type="button"
-                        className={`tab-button ${activeTab === "analytics" ? "active" : ""}`}
-                        onClick={() => setActiveTab("analytics")}
-                    >
-                        Phân tích chi tiết
                     </button>
                     <button
                         type="button"
@@ -220,7 +196,6 @@ function Dashboard() {
                         <div className="card">
                             <div className="card-header">
                                 <h2 className="card-title">Doanh thu theo tháng</h2>
-                                <p className="card-description">Biểu đồ hiển thị doanh thu theo tháng trong năm nay</p>
                             </div>
                             <div className="card-content">
                                 <div className="chart-container">
