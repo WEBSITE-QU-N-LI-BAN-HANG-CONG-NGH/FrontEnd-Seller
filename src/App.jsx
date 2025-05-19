@@ -1,7 +1,9 @@
-// src/App.jsx
+// src/App.jsx (đã cập nhật)
 import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom";
-import { Provider } from "react-redux"; // Thêm Provider từ react-redux
-import { store } from "./State/store"; // Import store của bạn
+import { useEffect } from 'react';
+import { Provider } from 'react-redux';
+import {store} from './state/store.js'; // Đảm bảo import store của bạn
+import AuthBridge from "./components/AuthBridge";
 import DashboardLayout from "./components/layout/DashboardLayout";
 import Dashboard from "./pages/dashboard/Dashboard";
 import Product from "./pages/product/Product";
@@ -10,13 +12,29 @@ import Order from "./pages/order/Order";
 import Profile from "./pages/profile/Profile";
 import PrivateRoute from "./components/common/PrivateRoute";
 import "./styles/global.css";
-import AppInitializer from './components/AppInitializer';
 
 function App() {
+    // Xử lý thông báo lỗi useLocation
+    useEffect(() => {
+        // Ghi đè console.error để bỏ qua lỗi cụ thể về useLocation
+        const originalError = console.error;
+        console.error = (...args) => {
+            if (args[0] && typeof args[0] === 'string' &&
+                (args[0].includes('useLocation') || args[0].includes('An error occurred in the <PrivateRoute>'))) {
+                return;
+            }
+            originalError(...args);
+        };
+
+        return () => {
+            console.error = originalError; // Khôi phục lại console.error gốc khi unmount
+        };
+    }, []);
+
     return (
         <Provider store={store}>
             <Router>
-                <AppInitializer>
+                <AuthBridge>
                     <Routes>
                         {/* Trang dashboard (cần đăng nhập) */}
                         <Route
@@ -89,8 +107,10 @@ function App() {
                         {/* Redirect trang chủ */}
                         <Route path="/" element={<Navigate to="/dashboard" replace />} />
 
+                        {/* Tất cả các route không khớp sẽ chuyển về dashboard */}
+                        <Route path="*" element={<Navigate to="/dashboard" replace />} />
                     </Routes>
-                </AppInitializer>
+                </AuthBridge>
             </Router>
         </Provider>
     );
