@@ -2,8 +2,17 @@
 import api from '../config/Api.js';
 
 const productService = {
-    getSellerProducts: () => {
-        return api.get('/seller/products/list-products');
+
+    getSellerProducts: (params = {}) => {
+        const { page = 0, size = 10, sortBy = 'id', sortDir = 'desc' } = params;
+        const queryParams = new URLSearchParams({
+            page: page.toString(),
+            size: size.toString(),
+            sortBy,
+            sortDir
+        });
+
+        return api.get(`/seller/products/list-products?${queryParams}`);
     },
 
     getProductDetail: (id) => {
@@ -29,6 +38,7 @@ const productService = {
     uploadProductImage: (productId, imageFile) => {
         const formData = new FormData();
         formData.append('image', imageFile);
+
         return api.post(`/images/upload/${productId}`, formData, {
             headers: {
                 'Content-Type': 'multipart/form-data',

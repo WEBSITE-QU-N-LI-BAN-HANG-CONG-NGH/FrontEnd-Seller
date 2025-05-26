@@ -8,22 +8,111 @@ const useProduct = () => {
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState(null);
 
-    // Lấy danh sách sản phẩm
-    const fetchProducts = useCallback(async () => {
+    // Pagination state
+    const [pagination, setPagination] = useState({
+        currentPage: 0,
+        totalPages: 0,
+        totalElements: 0,
+        hasNext: false,
+        hasPrevious: false,
+        pageSize: 10,
+        isFirst: true,
+        isLast: true
+    });
+
+    // Filter state
+    const [filters, setFilters] = useState({
+        search: '',
+        category: '',
+        minPrice: null,
+        maxPrice: null,
+        status: 'all' // all, inStock, outOfStock
+    });
+
+    // Fetch products with pagination and filters
+    const fetchProducts = useCallback(async (page = 0, size = 10, sortBy = 'createdAt', sortDir = 'desc', currentFilters = null) => {
         setLoading(true);
         try {
-            const response = await productService.getSellerProducts();
-            setProducts(response.data.data);
-            return response.data.data;
+            const response = await productService.getSellerProducts({
+                page,
+                size,
+                sortBy,
+                sortDir,
+                ...(currentFilters || filters)
+            });
+
+            const data = response.data.data;
+
+            // Fix: Correctly destructure pagination from response
+            setProducts(data.products || []);
+
+            // The pagination object is nested inside data
+            const paginationData = data.pagination;
+            setPagination({
+                currentPage: paginationData.currentPage,
+                totalPages: paginationData.totalPages,
+                totalElements: paginationData.totalElements,
+                hasNext: paginationData.hasNext,
+                hasPrevious: paginationData.hasPrevious,
+                pageSize: paginationData.pageSize,
+                isFirst: paginationData.isFirst,
+                isLast: paginationData.isLast
+            });
+
+            console.log('Fetched products:', data);
+            console.log('Pagination state:', paginationData);
+            return data;
         } catch (err) {
             setError(err.response?.data?.message || 'Không thể lấy danh sách sản phẩm');
             throw err;
         } finally {
             setLoading(false);
         }
-    }, []);
+    }, []); // Remove filters dependency to prevent infinite loop
 
-    // Lấy thông tin chi tiết sản phẩm
+    // Update filters
+    const updateFilters = useCallback((newFilters) => {
+        setFilters(prev => ({ ...prev, ...newFilters }));
+        // Reset to first page when filters change
+        fetchProducts(0, pagination.pageSize, 'createdAt', 'desc', { ...filters, ...newFilters });
+    }, [fetchProducts, pagination.pageSize, filters]);
+
+    // Clear filters
+    const clearFilters = useCallback(() => {
+        const defaultFilters = {
+            search: '',
+            category: '',
+            minPrice: null,
+            maxPrice: null,
+            status: 'all'
+        };
+        setFilters(defaultFilters);
+        fetchProducts(0, pagination.pageSize, 'createdAt', 'desc', defaultFilters);
+    }, [fetchProducts, pagination.pageSize]);
+
+    // Navigate to specific page
+    const goToPage = useCallback((page) => {
+        console.log('Going to page:', page);
+        fetchProducts(page, pagination.pageSize, 'createdAt', 'desc', filters);
+    }, [fetchProducts, pagination.pageSize, filters]);
+
+    // Navigate to next page
+    const nextPage = useCallback(() => {
+        console.log('Next page clicked, hasNext:', pagination.hasNext);
+        if (pagination.hasNext) {
+            goToPage(pagination.currentPage + 1);
+        }
+    }, [goToPage, pagination.hasNext, pagination.currentPage]);
+
+    // Navigate to previous page
+    const previousPage = useCallback(() => {
+        console.log('Previous page clicked, hasPrevious:', pagination.hasPrevious);
+        if (pagination.hasPrevious) {
+            goToPage(pagination.currentPage - 1);
+        }
+    }, [goToPage, pagination.hasPrevious, pagination.currentPage]);
+
+    // Fetch product detail
     const fetchProductDetail = useCallback(async (productId) => {
         setLoading(true);
         try {
@@ -38,11 +127,13 @@ const useProduct = () => {
         }
     }, []);
 
-    // Tạo sản phẩm mới
+    // Create product
     const createProduct = useCallback(async (productData) => {
         setLoading(true);
         try {
             const response = await productService.createProduct(productData);
+            // Refresh current page after creating
+            await fetchProducts(0, pagination.pageSize); // Go to first page to see new product
             return response.data.data;
         } catch (err) {
             setError(err.response?.data?.message || 'Không thể tạo sản phẩm');
@@ -50,13 +141,15 @@ const useProduct = () => {
         } finally {
             setLoading(false);
         }
-    }, []);
+    }, [fetchProducts, pagination.pageSize]);
 
-    // Cập nhật sản phẩm
+    // Update product
     const updateProduct = useCallback(async (productId, productData) => {
         setLoading(true);
         try {
             const response = await productService.updateProduct(productId, productData);
+            // Refresh current page after updating
+            await fetchProducts(pagination.currentPage, pagination.pageSize);
             return response.data.data;
         } catch (err) {
             setError(err.response?.data?.message || 'Không thể cập nhật sản phẩm');
@@ -64,23 +157,30 @@ const useProduct = () => {
         } finally {
             setLoading(false);
         }
-    }, []);
+    }, [fetchProducts, pagination.currentPage, pagination.pageSize]);
 
-    // Xóa sản phẩm
+    // Delete product
     const deleteProduct = useCallback(async (productId) => {
         setLoading(true);
         try {
             await productService.deleteProduct(productId);
-            setProducts(prevProducts => prevProducts.filter(p => p.id !== productId));
+
+            // Check if we need to go to previous page after deletion
+            const remainingOnPage = products.length - 1;
+            const targetPage = remainingOnPage === 0 && pagination.currentPage > 0
+                ? pagination.currentPage - 1
+                : pagination.currentPage;
+
+            await fetchProducts(targetPage, pagination.pageSize);
         } catch (err) {
             setError(err.response?.data?.message || 'Không thể xóa sản phẩm');
             throw err;
         } finally {
             setLoading(false);
         }
-    }, []);
+    }, [products.length, pagination.currentPage, pagination.pageSize, fetchProducts]);
 
-    // Upload hình ảnh sản phẩm
+    // Upload product image
     const uploadProductImage = useCallback(async (productId, imageFile) => {
         setLoading(true);
         try {
@@ -94,22 +194,44 @@ const useProduct = () => {
         }
     }, []);
 
-    // Reset state khi có lỗi
-    const resetState = () => {
+    // Get product statistics
+    const getProductStats = useCallback(async () => {
+        setLoading(true);
+        try {
+            const response = await productService.getProductStats();
+            return response.data.data;
+        } catch (err) {
+            setError(err.response?.data?.message || 'Không thể lấy thống kê sản phẩm');
+            throw err;
+        } finally {
+            setLoading(false);
+        }
+    }, []);
+
+    // Reset state
+    const resetState = useCallback(() => {
         setError(null);
-    };
+    }, []);
 
     return {
         products,
         product,
         loading,
         error,
+        pagination,
+        filters,
         fetchProducts,
         fetchProductDetail,
         createProduct,
         updateProduct,
         deleteProduct,
         uploadProductImage,
+        getProductStats,
+        updateFilters,
+        clearFilters,
+        goToPage,
+        nextPage,
+        previousPage,
         resetState
     };
 };
