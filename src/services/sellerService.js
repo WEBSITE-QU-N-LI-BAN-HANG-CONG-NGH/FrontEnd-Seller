@@ -105,6 +105,27 @@ const sellerService = {
 
     getVerificationStatus: () => {
         return fetchWithRetry(api.get, '/seller/profile/verification-status');
+    },
+
+    uploadAvatar: (file) => {
+        const formData = new FormData();
+        formData.append('file', file);
+
+        return api.post('/seller/profile/avatar/upload', formData, {
+            headers: {
+                'Content-Type': 'multipart/form-data',
+            },
+        });
+    },
+
+    // Update address
+    updateAddress: (addressData) => {
+        return api.put('/seller/profile/address', addressData);
+    },
+
+    // Change password
+    changePassword: (passwordData) => {
+        return api.post('/seller/profile/change-password', passwordData);
     }
 };
 

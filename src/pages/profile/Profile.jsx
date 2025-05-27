@@ -1,40 +1,32 @@
-// src/pages/profile/Profile.jsx
+// Profile.jsx - Address field removed
 import { useState, useEffect } from "react";
-import { AlertCircle, Building, Camera, CreditCard, Lock, Mail, MapPin, Phone, Save, User } from "lucide-react";
+import { AlertCircle, Camera, Lock, Mail, Phone, Save, User } from "lucide-react";
 import "../../styles/profile/profile.css";
 import useSeller from "../../hooks/useSeller";
 import { isValidEmail, isValidPhoneNumber } from "../../utils/validators";
 import LoadingSpinner from "../../components/common/LoadingSpinner";
 import ErrorAlert from "../../components/common/ErrorAlert";
+import sellerService from "../../services/sellerService.js";
 
 function Profile() {
     const [isEditing, setIsEditing] = useState(false);
     const [activeTab, setActiveTab] = useState("profile");
     const [formErrors, setFormErrors] = useState({});
+    const [isUploading, setIsUploading] = useState(false);
+    const [isChangingPassword, setIsChangingPassword] = useState(false);
     const [formData, setFormData] = useState({
-        // Thông tin cá nhân
+        // Personal information
         firstName: "",
         lastName: "",
         email: "",
         phone: "",
 
-        // Thông tin shop
+        // Shop information
         shopName: "",
         logo: "",
         description: "",
         website: "",
-        address: "",
-        city: "",
-        state: "",
-        zipCode: "",
-        phoneNumber: "",
-        businessType: "",
-
-        // Thông tin VNPay
-        merchantId: "",
-        terminalId: "",
-        secretKey: "",
-        callbackUrl: ""
+        businessType: ""
     });
 
     const {
@@ -49,38 +41,27 @@ function Profile() {
         resetState
     } = useSeller();
 
-    // Lấy thông tin profile và shop khi component mount
+    // Fetch profile and shop data when component mounts
     useEffect(() => {
         const fetchData = async () => {
             try {
                 const profileData = await fetchProfile();
                 const shopData = await fetchShopInfo();
 
-                // Cập nhật form data với thông tin từ API
+                // Update form data with clean mapping
                 setFormData({
-                    // Thông tin cá nhân
+                    // Personal information
                     firstName: profileData.firstName || "",
                     lastName: profileData.lastName || "",
                     email: profileData.email || "",
                     phone: profileData.phone || "",
 
-                    // Thông tin shop
-                    shopName: shopData.shopName || "",
-                    logo: shopData.logo || "",
-                    description: shopData.description || "",
+                    // Shop information
+                    shopName: shopData.shopName || `${profileData.firstName} ${profileData.lastName} Shop`,
+                    logo: shopData.logo || profileData.imageUrl || "",
+                    description: shopData.description || `Cửa hàng của ${profileData.firstName} ${profileData.lastName}`,
                     website: shopData.website || "",
-                    address: shopData.address || "",
-                    city: shopData.city || "",
-                    state: shopData.state || "",
-                    zipCode: shopData.zipCode || "",
-                    phoneNumber: shopData.phoneNumber || "",
-                    businessType: shopData.businessType || "",
-
-                    // Thông tin VNPay (dummy data)
-                    merchantId: "TECHSHOP123",
-                    terminalId: "TECHSHOP01",
-                    secretKey: "••••••••••••••••",
-                    callbackUrl: "https://techshop.vn/vnpay/callback"
+                    businessType: shopData.businessType || "Cá nhân"
                 });
             } catch (err) {
                 console.error("Lỗi khi lấy thông tin profile:", err);
@@ -90,7 +71,7 @@ function Profile() {
         fetchData();
     }, [fetchProfile, fetchShopInfo]);
 
-    // Xử lý thay đổi input
+    // Handle input changes
     const handleChange = (e) => {
         const { name, value } = e.target;
         setFormData(prev => ({
@@ -98,7 +79,7 @@ function Profile() {
             [name]: value
         }));
 
-        // Xóa lỗi khi người dùng nhập lại
+        // Clear errors when user types again
         if (formErrors[name]) {
             setFormErrors(prev => ({
                 ...prev,
@@ -107,57 +88,50 @@ function Profile() {
         }
     };
 
-    // Xác thực form trước khi gửi
+    // Validate form before submission
     const validateForm = () => {
         const errors = {};
 
-        // Kiểm tra email
+        // Check email (though it's disabled, keep validation)
         if (formData.email && !isValidEmail(formData.email)) {
             errors.email = "Email không hợp lệ";
         }
 
-        // Kiểm tra số điện thoại
+        // Check phone number
         if (formData.phone && !isValidPhoneNumber(formData.phone)) {
             errors.phone = "Số điện thoại không hợp lệ";
-        }
-
-        if (formData.phoneNumber && !isValidPhoneNumber(formData.phoneNumber)) {
-            errors.phoneNumber = "Số điện thoại cửa hàng không hợp lệ";
         }
 
         setFormErrors(errors);
         return Object.keys(errors).length === 0;
     };
 
-    // Xử lý lưu thông tin
+    // Handle save information
     const handleSave = async () => {
         if (!validateForm()) {
             return;
         }
 
         try {
-            // Cập nhật thông tin cá nhân
+            // Update personal profile
             await updateProfile({
                 firstName: formData.firstName,
                 lastName: formData.lastName,
                 phone: formData.phone
             });
 
-            // Cập nhật thông tin shop
+            // Update shop information
             await updateShopInfo({
                 shopName: formData.shopName,
-                logo: formData.logo,
                 description: formData.description,
                 website: formData.website,
-                address: formData.address,
-                city: formData.city,
-                state: formData.state,
-                zipCode: formData.zipCode,
-                phoneNumber: formData.phoneNumber,
-                businessType: formData.businessType
+                businessType: formData.businessType,
+                phone: formData.phone // Use same phone for shop
             });
 
             setIsEditing(false);
+            console.log('Cập nhật thông tin thành công');
+
         } catch (err) {
             console.error("Lỗi khi cập nhật thông tin:", err);
             setFormErrors({
@@ -167,19 +141,92 @@ function Profile() {
         }
     };
 
-    // Xử lý upload logo
-    const handleLogoUpload = (e) => {
+    // Handle logo upload
+    const handleLogoUpload = async (e) => {
         const file = e.target.files[0];
         if (!file) return;
 
-        const reader = new FileReader();
-        reader.onload = (event) => {
+        try {
+            setIsUploading(true);
+            const response = await sellerService.uploadAvatar(file);
+
             setFormData(prev => ({
                 ...prev,
-                logo: event.target.result
+                logo: response.data.data.imageUrl
             }));
-        };
-        reader.readAsDataURL(file);
+
+            console.log('Upload avatar thành công');
+        } catch (error) {
+            console.error('Lỗi khi upload avatar:', error);
+            setFormErrors(prev => ({
+                ...prev,
+                logo: 'Không thể upload avatar. Vui lòng thử lại.'
+            }));
+        } finally {
+            setIsUploading(false);
+        }
+    };
+
+    // Handle password change
+    const handleChangePassword = async () => {
+        const currentPassword = document.getElementById('current-password').value;
+        const newPassword = document.getElementById('new-password').value;
+        const confirmPassword = document.getElementById('confirm-password').value;
+
+        // Validate passwords
+        if (!currentPassword || !newPassword || !confirmPassword) {
+            setFormErrors(prev => ({
+                ...prev,
+                password: 'Vui lòng điền đầy đủ thông tin'
+            }));
+            return;
+        }
+
+        if (newPassword !== confirmPassword) {
+            setFormErrors(prev => ({
+                ...prev,
+                password: 'Xác nhận mật khẩu không khớp'
+            }));
+            return;
+        }
+
+        if (newPassword.length < 6) {
+            setFormErrors(prev => ({
+                ...prev,
+                password: 'Mật khẩu mới phải có ít nhất 6 ký tự'
+            }));
+            return;
+        }
+
+        try {
+            setIsChangingPassword(true);
+            await sellerService.changePassword({
+                currentPassword,
+                newPassword,
+                confirmPassword
+            });
+
+            // Reset form
+            document.getElementById('current-password').value = '';
+            document.getElementById('new-password').value = '';
+            document.getElementById('confirm-password').value = '';
+
+            // Clear any previous errors
+            setFormErrors(prev => ({
+                ...prev,
+                password: null
+            }));
+
+            console.log('Đổi mật khẩu thành công');
+        } catch (error) {
+            console.error('Lỗi khi đổi mật khẩu:', error);
+            setFormErrors(prev => ({
+                ...prev,
+                password: error.response?.data?.message || 'Đổi mật khẩu thất bại'
+            }));
+        } finally {
+            setIsChangingPassword(false);
+        }
     };
 
     if (loading && !profile) {
@@ -235,7 +282,7 @@ function Profile() {
                                             />
                                             <button
                                                 className="logo-edit-button"
-                                                disabled={!isEditing}
+                                                disabled={!isEditing || isUploading}
                                                 onClick={() => document.getElementById('logo-upload').click()}
                                             >
                                                 <Camera className="icon-small" />
@@ -247,12 +294,14 @@ function Profile() {
                                                 accept="image/*"
                                                 style={{ display: 'none' }}
                                                 onChange={handleLogoUpload}
-                                                disabled={!isEditing}
+                                                disabled={!isEditing || isUploading}
                                             />
                                         </div>
                                         <div className="logo-info">
-                                            <h3 className="logo-title">Logo cửa hàng</h3>
-                                            <p className="logo-description">PNG hoặc JPG. Tối đa 1MB</p>
+                                            <h3 className="logo-title">Logo</h3>
+                                            <p className="logo-description">
+                                                {isUploading ? 'Đang tải lên...' : 'PNG hoặc JPG. Tối đa 1MB'}
+                                            </p>
                                         </div>
                                     </div>
 
@@ -296,7 +345,26 @@ function Profile() {
                                                 value={formData.website}
                                                 onChange={handleChange}
                                                 disabled={!isEditing}
+                                                placeholder="https://example.com"
                                             />
+                                        </div>
+
+                                        <div className="form-group">
+                                            <label htmlFor="businessType" className="form-label">
+                                                Loại hình kinh doanh
+                                            </label>
+                                            <select
+                                                id="businessType"
+                                                name="businessType"
+                                                className="form-input"
+                                                value={formData.businessType}
+                                                onChange={handleChange}
+                                                disabled={!isEditing}
+                                            >
+                                                <option value="Cá nhân">Cá nhân</option>
+                                                <option value="Công ty">Công ty</option>
+                                                <option value="Doanh nghiệp">Doanh nghiệp</option>
+                                            </select>
                                         </div>
                                     </div>
                                 </div>
@@ -318,175 +386,179 @@ function Profile() {
                                                 <input
                                                     id="email"
                                                     name="email"
-                                                    className={`form-input with-icon ${formErrors.email ? 'error' : ''}`}
+                                                    className="form-input with-icon"
                                                     value={formData.email}
                                                     disabled
                                                     readOnly
                                                 />
                                             </div>
-                                            {formErrors.email && <div className="form-error">{formErrors.email}</div>}
                                         </div>
-                                        {formErrors.email && <div className="form-error">{formErrors.email}</div>}
-                                    </div>
 
-                                    <div className="form-group">
-                                        <label htmlFor="phone" className="form-label">
-                                            Số điện thoại
-                                        </label>
-                                        <div className="input-with-icon">
-                                            <div className="input-icon">
-                                                <Phone className="icon-small" />
+                                        <div className="form-group">
+                                            <label htmlFor="phone" className="form-label">
+                                                Số điện thoại
+                                            </label>
+                                            <div className="input-with-icon">
+                                                <div className="input-icon">
+                                                    <Phone className="icon-small" />
+                                                </div>
+                                                <input
+                                                    id="phone"
+                                                    name="phone"
+                                                    className={`form-input with-icon ${formErrors.phone ? 'error' : ''}`}
+                                                    value={formData.phone}
+                                                    onChange={handleChange}
+                                                    disabled={!isEditing}
+                                                    placeholder="0123456789"
+                                                />
                                             </div>
-                                            <input
-                                                id="phone"
-                                                name="phone"
-                                                className={`form-input with-icon ${formErrors.phone ? 'error' : ''}`}
-                                                value={formData.phone}
-                                                onChange={handleChange}
-                                                disabled={!isEditing}
-                                            />
-                                        </div>
-                                        {formErrors.phone && <div className="form-error">{formErrors.phone}</div>}
-                                    </div>
-
-                                    <div className="form-group full-width">
-                                        <label htmlFor="address" className="form-label">
-                                            Địa chỉ
-                                        </label>
-                                        <div className="input-with-icon">
-                                            <div className="input-icon">
-                                                <MapPin className="icon-small" />
-                                            </div>
-                                            <input
-                                                id="address"
-                                                name="address"
-                                                className="form-input with-icon"
-                                                value={formData.address}
-                                                onChange={handleChange}
-                                                disabled={!isEditing}
-                                            />
+                                            {formErrors.phone && <div className="form-error">{formErrors.phone}</div>}
                                         </div>
                                     </div>
                                 </div>
                             </div>
 
                             <div className="separator"></div>
-                        <div className="card-footer">
-                    {isEditing ? (
-                        <>
-                        <button className="button outline" onClick={() => setIsEditing(false)}>
-                    Hủy
-                </button>
-                <button className="button primary" onClick={handleSave}>
-                    <Save className="icon-small" />
-                    Lưu thay đổi
-                </button>
-            </>
-            ) : (
-            <button className="button primary" onClick={() => setIsEditing(true)}>
-                Chỉnh sửa thông tin
-            </button>
-            )}
-        </div>
-</div>
-)}
-
-{activeTab === "account" && (
-        <div className="card">
-            <div className="card-header">
-                <h2 className="card-title">Thông tin tài khoản</h2>
-            </div>
-            <div className="card-content">
-                <div className="account-info">
-                    <div className="form-group">
-                        <label htmlFor="account-name" className="form-label">
-                            Tên người dùng
-                        </label>
-                        <div className="input-with-icon">
-                            <div className="input-icon">
-                                <User className="icon-small" />
+                            <div className="card-footer">
+                                {isEditing ? (
+                                    <>
+                                        <button className="button outline" onClick={() => setIsEditing(false)}>
+                                            Hủy
+                                        </button>
+                                        <button className="button primary" onClick={handleSave}>
+                                            <Save className="icon-small" />
+                                            Lưu thay đổi
+                                        </button>
+                                    </>
+                                ) : (
+                                    <button className="button primary" onClick={() => setIsEditing(true)}>
+                                        Chỉnh sửa thông tin
+                                    </button>
+                                )}
                             </div>
-                            <input
-                                id="account-name"
-                                className="form-input with-icon"
-                                value={`${formData.firstName} ${formData.lastName}`}
-                                disabled
-                            />
                         </div>
-                    </div>
+                    )}
 
-                    <div className="form-group">
-                        <label htmlFor="account-email" className="form-label">
-                            Email
-                        </label>
-                        <div className="input-with-icon">
-                            <div className="input-icon">
-                                <Mail className="icon-small" />
+                    {activeTab === "account" && (
+                        <div className="card">
+                            <div className="card-header">
+                                <h2 className="card-title">Thông tin tài khoản</h2>
                             </div>
-                            <input
-                                id="account-email"
-                                className="form-input with-icon"
-                                value={formData.email}
-                                disabled
-                            />
-                        </div>
-                    </div>
-                </div>
+                            <div className="card-content">
+                                <div className="account-info">
+                                    <div className="form-group">
+                                        <label htmlFor="account-name" className="form-label">
+                                            Tên người dùng
+                                        </label>
+                                        <div className="input-with-icon">
+                                            <div className="input-icon">
+                                                <User className="icon-small" />
+                                            </div>
+                                            <input
+                                                id="account-name"
+                                                className="form-input with-icon"
+                                                value={`${formData.firstName} ${formData.lastName}`}
+                                                disabled
+                                            />
+                                        </div>
+                                    </div>
 
-                <div className="separator"></div>
-
-                <div className="password-section">
-                    <h3 className="section-title">Đổi mật khẩu</h3>
-
-                    <div className="alert danger">
-                        <AlertCircle className="icon-small" />
-                        <div className="alert-content">
-                            <h4 className="alert-title">Lưu ý</h4>
-                            <p className="alert-description">Sau khi đổi mật khẩu, bạn sẽ cần đăng nhập lại vào hệ thống.</p>
-                        </div>
-                    </div>
-
-                    <div className="password-form">
-                        <div className="form-group">
-                            <label htmlFor="current-password" className="form-label">
-                                Mật khẩu hiện tại
-                            </label>
-                            <div className="input-with-icon">
-                                <div className="input-icon">
-                                    <Lock className="icon-small" />
+                                    <div className="form-group">
+                                        <label htmlFor="account-email" className="form-label">
+                                            Email
+                                        </label>
+                                        <div className="input-with-icon">
+                                            <div className="input-icon">
+                                                <Mail className="icon-small" />
+                                            </div>
+                                            <input
+                                                id="account-email"
+                                                className="form-input with-icon"
+                                                value={formData.email}
+                                                disabled
+                                            />
+                                        </div>
+                                    </div>
                                 </div>
-                                <input id="current-password" type="password" className="form-input with-icon" />
+
+                                <div className="separator"></div>
+
+                                <div className="password-section">
+                                    <h3 className="section-title">Đổi mật khẩu</h3>
+
+                                    <div className="alert danger">
+                                        <AlertCircle className="icon-small" />
+                                        <div className="alert-content">
+                                            <h4 className="alert-title">Lưu ý</h4>
+                                            <p className="alert-description">Sau khi đổi mật khẩu, bạn sẽ cần đăng nhập lại vào hệ thống.</p>
+                                        </div>
+                                    </div>
+
+                                    <div className="password-form">
+                                        <div className="form-group">
+                                            <label htmlFor="current-password" className="form-label">
+                                                Mật khẩu hiện tại
+                                            </label>
+                                            <div className="input-with-icon">
+                                                <div className="input-icon">
+                                                    <Lock className="icon-small" />
+                                                </div>
+                                                <input
+                                                    id="current-password"
+                                                    type="password"
+                                                    className="form-input with-icon"
+                                                    disabled={isChangingPassword}
+                                                />
+                                            </div>
+                                        </div>
+
+                                        <div className="form-group">
+                                            <label htmlFor="new-password" className="form-label">
+                                                Mật khẩu mới
+                                            </label>
+                                            <input
+                                                id="new-password"
+                                                type="password"
+                                                className="form-input"
+                                                disabled={isChangingPassword}
+                                            />
+                                        </div>
+
+                                        <div className="form-group">
+                                            <label htmlFor="confirm-password" className="form-label">
+                                                Xác nhận mật khẩu mới
+                                            </label>
+                                            <input
+                                                id="confirm-password"
+                                                type="password"
+                                                className="form-input"
+                                                disabled={isChangingPassword}
+                                            />
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div className="card-footer">
+                                <button
+                                    className="button primary"
+                                    onClick={handleChangePassword}
+                                    disabled={isChangingPassword}
+                                >
+                                    <Save className="icon-small" />
+                                    {isChangingPassword ? 'Đang lưu...' : 'Lưu thay đổi'}
+                                </button>
+                                {formErrors.password && (
+                                    <div className="form-error" style={{marginTop: '0.5rem', color: '#ef4444'}}>
+                                        {formErrors.password}
+                                    </div>
+                                )}
                             </div>
                         </div>
-
-                        <div className="form-group">
-                            <label htmlFor="new-password" className="form-label">
-                                Mật khẩu mới
-                            </label>
-                            <input id="new-password" type="password" className="form-input" />
-                        </div>
-
-                        <div className="form-group">
-                            <label htmlFor="confirm-password" className="form-label">
-                                Xác nhận mật khẩu mới
-                            </label>
-                            <input id="confirm-password" type="password" className="form-input" />
-                        </div>
-                    </div>
+                    )}
                 </div>
             </div>
-            <div className="card-footer">
-                <button className="button primary">
-                    <Save className="icon-small" />
-                    Lưu thay đổi
-                </button>
-            </div>
         </div>
-    )}
-</div>
-</div>
-</div>
-);
+    );
 }
 
 export default Profile;
