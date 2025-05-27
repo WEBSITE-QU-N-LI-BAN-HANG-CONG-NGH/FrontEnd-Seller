@@ -40,13 +40,13 @@ function AddProduct() {
         quantity: "",
         description: "",
         topLevelCategory: "",
-        secondLevelCategory: "",
+        secondLevelCategory: "", 
         discountPersent: 0,
         color: "",
         sizes: [],
         featured: false,
         active: true
-    });
+});
 
     // Xử lý thêm kích thước sản phẩm
     const handleAddSize = () => {
@@ -107,35 +107,39 @@ function AddProduct() {
 
     // Xác thực form trước khi gửi
     const validateForm = () => {
-        const errors = {};
+    const errors = {};
 
-        if (!isNotEmpty(productData.title)) {
-            errors.title = "Vui lòng nhập tên sản phẩm";
-        }
+    if (!isNotEmpty(productData.title)) {
+        errors.title = "Vui lòng nhập tên sản phẩm";
+    }
 
-        if (!isNotEmpty(productData.brand)) {
-            errors.brand = "Vui lòng nhập thương hiệu";
-        }
+    if (!isNotEmpty(productData.brand)) {
+        errors.brand = "Vui lòng nhập thương hiệu";
+    }
 
-        if (!isPositiveNumber(productData.price)) {
-            errors.price = "Giá bán phải là số dương";
-        }
+    if (!isPositiveNumber(productData.price)) {
+        errors.price = "Giá bán phải là số dương";
+    }
 
-        if (!isPositiveNumber(productData.quantity)) {
-            errors.quantity = "Số lượng phải là số dương";
-        }
+    if (!isPositiveNumber(productData.quantity)) {
+        errors.quantity = "Số lượng phải là số dương";
+    }
 
-        if (!isNotEmpty(productData.description)) {
-            errors.description = "Vui lòng nhập mô tả sản phẩm";
-        }
+    if (!isNotEmpty(productData.description)) {
+        errors.description = "Vui lòng nhập mô tả sản phẩm";
+    }
 
-        if (!isNotEmpty(productData.topLevelCategory)) {
-            errors.topLevelCategory = "Vui lòng chọn danh mục cấp 1";
-        }
+    if (!isNotEmpty(productData.topLevelCategory)) {
+        errors.topLevelCategory = "Vui lòng chọn danh mục cấp 1";
+    }
 
-        setFormErrors(errors);
-        return Object.keys(errors).length === 0;
-    };
+    if (!isNotEmpty(productData.secondLevelCategory)) {
+        errors.secondLevelCategory = "Vui lòng nhập danh mục phụ";
+    }
+
+    setFormErrors(errors);
+    return Object.keys(errors).length === 0;
+};
 
     // Xử lý tải lên hình ảnh
     const handleImageUpload = async (event, index) => {
@@ -369,20 +373,20 @@ function AddProduct() {
                                         </div>
 
                                         <div className="form-group">
-                                            <label htmlFor="topLevelCategory" className="form-label">
+                                            <label htmlFor="secondLevelCategory" className="form-label">
                                                 Danh mục phụ <span className="required">*</span>
                                             </label>
                                             <input
                                                 type="text"
-                                                id="topLevelCategory"
-                                                name="topLevelCategory"
-                                                className={`form-select ${formErrors.topLevelCategory ? 'error' : ''}`}
-                                                value={productData.topLevelCategory}
+                                                id="secondLevelCategory"
+                                                name="secondLevelCategory"
+                                                className={`form-input ${formErrors.secondLevelCategory ? 'error' : ''}`}
+                                                value={productData.secondLevelCategory}
                                                 onChange={handleInputChange}
-                                                placeholder="Nhập danh mục"
+                                                placeholder="Nhập danh mục phụ"
                                                 required
                                             />
-                                            {formErrors.topLevelCategory && <div className="form-error">{formErrors.topLevelCategory}</div>}
+                                            {formErrors.secondLevelCategory && <div className="form-error">{formErrors.secondLevelCategory}</div>}
                                         </div>
 
                                         <div className="form-group">
