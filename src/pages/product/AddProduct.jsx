@@ -345,7 +345,7 @@ function AddProduct() {
                                         </div>
                                     </div>
 
-                                    <div className="form-row three-columns">
+                                    <div className="form-row four-columns">
                                         <div className="form-group">
                                             <label htmlFor="topLevelCategory" className="form-label">
                                                 Danh mục <span className="required">*</span>
@@ -365,6 +365,23 @@ function AddProduct() {
                                                 <option value="Phụ kiện">Phụ kiện</option>
                                                 <option value="Màn hình">Màn hình</option>
                                             </select>
+                                            {formErrors.topLevelCategory && <div className="form-error">{formErrors.topLevelCategory}</div>}
+                                        </div>
+
+                                        <div className="form-group">
+                                            <label htmlFor="topLevelCategory" className="form-label">
+                                                Danh mục phụ <span className="required">*</span>
+                                            </label>
+                                            <input
+                                                type="text"
+                                                id="topLevelCategory"
+                                                name="topLevelCategory"
+                                                className={`form-select ${formErrors.topLevelCategory ? 'error' : ''}`}
+                                                value={productData.topLevelCategory}
+                                                onChange={handleInputChange}
+                                                placeholder="Nhập danh mục"
+                                                required
+                                            />
                                             {formErrors.topLevelCategory && <div className="form-error">{formErrors.topLevelCategory}</div>}
                                         </div>
 
@@ -631,22 +648,6 @@ function AddProduct() {
                             </div>
                         )}
                     </div>
-                </div>
-
-                <div className="form-actions">
-                    <button type="button" className="button outline" onClick={() => navigate("/dashboard/products")}>
-                        Hủy
-                    </button>
-                    <button type="submit" className="button primary" disabled={isSubmitting}>
-                        {isSubmitting ? (
-                            <>Đang lưu...</>
-                        ) : (
-                            <>
-                                <Check className="icon-small" />
-                                Lưu sản phẩm
-                            </>
-                        )}
-                    </button>
                 </div>
             </form>
         </div>

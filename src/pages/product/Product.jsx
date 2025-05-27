@@ -219,7 +219,7 @@ function Product() {
                     </h2>
                 </div>
                 <div className="card-content">
-                    <div className="filters">
+                    <div className="filters-product">
                         <div className="search-container">
                             <Search className="search-icon" />
                             <input
@@ -232,30 +232,7 @@ function Product() {
                         </div>
                         <div className="filter-actions">
                             <div className="filter-dropdown-container">
-                                <button
-                                    className="button outline small"
-                                    onClick={(e) => {
-                                        e.stopPropagation();
-                                        setFilterDropdownOpen(!filterDropdownOpen);
-                                    }}
-                                >
-                                    <SlidersHorizontal className="icon-small" />
-                                    Lọc
-                                    <ChevronDown className="icon-small" />
-                                </button>
-
-                                {filterDropdownOpen && (
                                     <div className="filter-dropdown">
-                                        <div className="filter-dropdown-header">
-                                            <h3>Bộ lọc</h3>
-                                            <button
-                                                className="button icon-only ghost small"
-                                                onClick={() => setFilterDropdownOpen(false)}
-                                            >
-                                                <X className="icon-small" />
-                                            </button>
-                                        </div>
-
                                         <div className="filter-dropdown-content">
                                             <div className="filter-group">
                                                 <label>Danh mục</label>
@@ -281,7 +258,7 @@ function Product() {
                                                         onChange={(e) => setLocalFilters({...localFilters, minPrice: e.target.value})}
                                                         className="filter-input"
                                                     />
-                                                    <span>-</span>
+                                                    <span> - </span>
                                                     <input
                                                         type="number"
                                                         placeholder="Đến"
@@ -321,7 +298,7 @@ function Product() {
                                             </button>
                                         </div>
                                     </div>
-                                )}
+                               
                             </div>
                         </div>
                     </div>
@@ -389,7 +366,7 @@ function Product() {
                                         <td className="actions-cell">
                                             <div className="dropdown">
                                                 <button
-                                                    className="button icon-only ghost"
+                                                    className="button-config icon-only ghost"
                                                     onClick={(e) => toggleDropdown(e, product.id)}
                                                 >
                                                     <MoreHorizontal className="icon-small" />
