@@ -137,10 +137,10 @@ function Product() {
     };
 
     // Generate page numbers to display
-    const generatePageNumbers = () => {
+        const generatePageNumbers = () => {
         const pages = [];
         const totalPages = pagination.totalPages;
-        const currentPage = pagination.currentPage;
+        const currentPage = pagination.currentPage; 
 
         if (totalPages <= 7) {
             // Show all pages if total is 7 or less
@@ -148,7 +148,7 @@ function Product() {
                 pages.push(i);
             }
         } else {
-            // Always show first page
+            // Always show first page (0)
             pages.push(0);
 
             if (currentPage > 2) {
@@ -156,7 +156,10 @@ function Product() {
             }
 
             // Show pages around current page
-            for (let i = Math.max(1, currentPage - 1); i <= Math.min(currentPage + 1, totalPages - 2); i++) {
+            const startPage = Math.max(1, currentPage - 1);
+            const endPage = Math.min(currentPage + 1, totalPages - 2);
+            
+            for (let i = startPage; i <= endPage; i++) {
                 pages.push(i);
             }
 
@@ -165,7 +168,9 @@ function Product() {
             }
 
             // Always show last page
-            pages.push(totalPages - 1);
+            if (totalPages > 1) {
+                pages.push(totalPages - 1);
+            }
         }
 
         return pages;
@@ -437,7 +442,7 @@ function Product() {
                                 </button>
                             </div>
 
-                            <div className="pagination-info">
+                           <div className="pagination-info">
                                 Trang {pagination.currentPage + 1} / {pagination.totalPages}
                                 <span className="separator">•</span>
                                 Hiển thị {products.length} trên {pagination.totalElements} sản phẩm

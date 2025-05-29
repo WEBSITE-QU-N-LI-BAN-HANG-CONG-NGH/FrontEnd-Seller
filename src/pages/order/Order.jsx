@@ -193,12 +193,12 @@ function Order() {
                                             <option value="PENDING">Chờ xác nhận</option>
                                             <option value="CANCELLED">Đã hủy</option>
                                         </select>
-                                        {selectedStatus && (
+                                        {/*{selectedStatus && (
                                             <button className="button ghost small" onClick={() => setSelectedStatus("")}>
                                                 <X className="icon-small" />
                                                 Xóa bộ lọc
                                             </button>
-                                        )}
+                                        )}*/}
                                     </div>
                                 )}
                             </div>
