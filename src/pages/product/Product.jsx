@@ -165,9 +165,156 @@ function Product() {
         return () => document.removeEventListener("click", handleClickOutside);
     }, []);
 
+<<<<<<< Updated upstream
     if (loading && products.length === 0) {
         return <LoadingSpinner />;
     }
+=======
+        // Handle delete button click
+        const handleDeleteClick = (e, product) => {
+            e.stopPropagation();
+            setSelectedProduct(product);
+            setDeleteModalOpen(true);
+            setDropdownOpen(null);
+        };
+
+        // Handle confirm delete
+        const handleConfirmDelete = async () => {
+            if (selectedProduct) {
+                try {
+                    await deleteProduct(selectedProduct.id);
+                    setDeleteModalOpen(false);
+                    setSelectedProduct(null);
+                } catch (err) {
+                    console.error("Lỗi khi xóa sản phẩm:", err);
+                }
+            }
+        };
+
+        // Handle cancel delete
+        const handleCancelDelete = () => {
+            setDeleteModalOpen(false);
+            setSelectedProduct(null);
+        };
+
+        // Handle edit product
+        const handleEditClick = (e, productId) => {
+            e.stopPropagation();
+            navigate(`/dashboard/products/edit/${productId}`);
+            setDropdownOpen(null);
+        };
+
+        // Apply filters
+        const handleApplyFilters = () => {
+            const filtersToApply = {
+                topLevelCategory: localFilters.category,
+                minPrice: localFilters.minPrice ? parseInt(localFilters.minPrice) : null,
+                maxPrice: localFilters.maxPrice ? parseInt(localFilters.maxPrice) : null,
+                status: localFilters.status
+            };
+            updateFilters(filtersToApply);
+            setFilterDropdownOpen(false);
+        };
+
+        // Clear all filters
+        const handleClearFilters = () => {
+            setLocalFilters({
+                category: '',
+                minPrice: '',
+                maxPrice: '',
+                status: 'all'
+            });
+            setSearchQuery('');
+            clearFilters();
+            setFilterDropdownOpen(false);
+        };
+
+        // Generate page numbers to display
+            const generatePageNumbers = () => {
+            const pages = [];
+            const totalPages = pagination.totalPages;
+            const currentPage = pagination.currentPage;
+    // Handle page input change
+    const handlePageInputChange = (e) => {
+        setPageInput(e.target.value);
+    };
+
+            if (totalPages <= 7) {
+                // Show all pages if total is 7 or less
+                for (let i = 0; i < totalPages; i++) {
+                    pages.push(i);
+                }
+            } else {
+                // Always show first page (0)
+                pages.push(0);
+
+                if (currentPage > 2) {
+                    pages.push('...');
+                }
+
+                // Show pages around current page
+                const startPage = Math.max(1, currentPage - 1);
+                const endPage = Math.min(currentPage + 1, totalPages - 2);
+
+                for (let i = startPage; i <= endPage; i++) {
+                    pages.push(i);
+                }
+
+                if (currentPage < totalPages - 3) {
+                    pages.push('...');
+                }
+    // Handle page input submit
+    const handlePageInputSubmit = (e) => {
+        e.preventDefault();
+        const pageNumber = parseInt(pageInput);
+        if (pageNumber >= 1 && pageNumber <= pagination.totalPages) {
+            goToPage(pageNumber - 1); // Convert to 0-based index
+            setPageInput("");
+        } else {
+            // Show error or reset input
+            setPageInput("");
+        }
+    };
+
+    // Handle page input key press
+    const handlePageInputKeyPress = (e) => {
+        if (e.key === 'Enter') {
+            handlePageInputSubmit(e);
+        }
+    };
+                // Always show last page
+                if (totalPages > 1) {
+                    pages.push(totalPages - 1);
+                }
+            }
+
+            return pages;
+        };
+
+        // Close dropdowns when clicking outside
+        useEffect(() => {
+            const handleClickOutside = (e) => {
+                if (!e.target.closest('.dropdown')) {
+                    setDropdownOpen(null);
+                }
+            };
+            document.addEventListener("click", handleClickOutside);
+            return () => document.removeEventListener("click", handleClickOutside);
+        }, []);
+
+        if (loading && products.length === 0) {
+            return <LoadingSpinner />;
+        }
+
+        if (error) {
+            return (
+                <ErrorAlert
+                    message={error}
+                    onDismiss={() => resetState()}
+                />
+            );
+        }
+>>>>>>> Stashed changes
 
     if (error) {
         return (
@@ -285,8 +432,12 @@ function Product() {
                                                     Áp dụng
                                                 </button>
                                     </div>
+<<<<<<< Updated upstream
                                     </div>
                                
+=======
+
+>>>>>>> Stashed changes
                             </div>
                         </div>
                     </div>
@@ -389,10 +540,15 @@ function Product() {
                         </table>
                     </div>
 
+<<<<<<< Updated upstream
+=======
+                    {/* Pagination controls */}
+>>>>>>> Stashed changes
                     {pagination.totalPages > 1 && (
                         <div className="pagination-container">
                             <div className="pagination">
                                 <button
+<<<<<<< Updated upstream
                                     className={`button-product outline small ${pagination.currentPage === 0 ? 'active' : ''}`}
                                     onClick={() => goToPage(0)}
                                     disabled={pagination.currentPage === 0}
@@ -401,10 +557,13 @@ function Product() {
                                 </button>
 
                                 <button
+=======
+>>>>>>> Stashed changes
                                     className="button outline small"
                                     disabled={!pagination.hasPrevious}
                                     onClick={previousPage}
                                 >
+<<<<<<< Updated upstream
                                     Trang Trước
                                 </button>
 
@@ -420,12 +579,32 @@ function Product() {
                                         className="button-product outline small "
                                     />
                                 </div>
+=======
+                                    Trước
+                                </button>
+
+                                {/* Page numbers */}
+                                {generatePageNumbers().map((page, index) => (
+                                    page === '...' ? (
+                                        <span key={`ellipsis-${index}`} className="pagination-ellipsis">...</span>
+                                    ) : (
+                                        <button
+                                            key={page}
+                                            className={`button outline small ${page === pagination.currentPage ? 'active' : ''}`}
+                                            onClick={() => goToPage(page)}
+                                        >
+                                            {page + 1}
+                                        </button>
+                                    )
+                                ))}
+>>>>>>> Stashed changes
 
                                 <button
                                     className="button outline small"
                                     disabled={!pagination.hasNext}
                                     onClick={nextPage}
                                 >
+<<<<<<< Updated upstream
                                     Trang kế
                                 </button>
                                     <button
@@ -439,6 +618,16 @@ function Product() {
 
                            <div className="pagination-info">
                                 Hiển thị {products.length} trên {pagination.totalElements || 0} sản phẩm
+=======
+                                    Sau
+                                </button>
+                            </div>
+
+                           <div className="pagination-info">
+                                Trang {pagination.currentPage + 1} / {pagination.totalPages}
+                                <span className="separator">•</span>
+                                Hiển thị {products.length} trên {pagination.totalElements} sản phẩm
+>>>>>>> Stashed changes
                             </div>
                         </div>
                     )}
