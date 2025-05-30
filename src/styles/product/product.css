@@ -115,7 +115,7 @@
     display: flex;
     flex-direction: row;
     align-items: center;
-    gap: 300px;
+    gap: 200px;
 }
 
 .filter-dropdown-content {
@@ -146,7 +146,7 @@
     height: 37.6px;
 }
 
-.button {
+.button, button-product {
     padding: 8px;
     border-radius: 0.375rem;
     font-size: 0.875rem;
@@ -163,7 +163,9 @@
     border-color: white;
 }
 
-.button.primary {
+
+
+.button-product.primary {
     background-color: #3b82f6;
     color: white;
     border: none;
@@ -174,6 +176,12 @@
 }
 
 .button.outline {
+    background-color: transparent;
+    border: 1px solid #e2e8f0;
+    color: inherit;
+}
+
+.button-product.outline {
     background-color: transparent;
     border: 1px solid #e2e8f0;
     color: inherit;
@@ -201,17 +209,30 @@
     border: none;
 }
 
-.button.outline:hover {
-    background-color: #f8fafc;
-}
 
 .button.outline:disabled {
     opacity: 0.5;
     cursor: not-allowed;
 }
 
+.button-product.outline:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
 .button.small {
     padding: 0.25rem 0.5rem;
+    font-size: 0.75rem;
+}
+
+
+.button-product.outline:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.button-product.small {
+    padding: 8px;
     font-size: 0.75rem;
 }
 
@@ -229,6 +250,13 @@
     color: white;
     border-color: #3b82f6;
 }
+
+.button-product.active {
+    background-color: #3b82f6;
+    color: white;
+    border-color: #3b82f6;
+}
+
 
 .icon-small {
     width: 1rem;

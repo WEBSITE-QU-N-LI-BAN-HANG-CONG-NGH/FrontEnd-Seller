@@ -21,7 +21,6 @@ import CategoryRevenueChart from "./CategoryRevenueChart.jsx";
 function Dashboard() {
     const [selectedMonth, setSelectedMonth] = useState("Tháng 5, 2025");
     const [activeTab, setActiveTab] = useState("monthly");
-
     const {
         overview,
         monthlyRevenue,
@@ -35,6 +34,15 @@ function Dashboard() {
         fetchDailyRevenue,
         fetchCategoryRevenue
     } = useDashboard();
+
+    // Get today's date in dd/mm/yyyy format
+    const getTodayDate = () => {
+        const today = new Date();
+        const day = String(today.getDate()).padStart(2, '0');
+        const month = String(today.getMonth() + 1).padStart(2, '0');
+        const year = today.getFullYear();
+        return `${day}/${month}/${year}`;
+    };
 
     // Fetch dữ liệu khi component mount
     useEffect(() => {
@@ -58,6 +66,7 @@ function Dashboard() {
         return <ErrorAlert message={error} />;
     }
 
+
     return (
         <div className="dashboard-page">
             <div className="dashboard-header">
@@ -66,23 +75,8 @@ function Dashboard() {
                 </div>
                 <div className="header-actions">
                     <div className="month-selector">
-                        <Calendar className="icon-small" />
-                        <select
-                            value={selectedMonth}
-                            onChange={(e) => setSelectedMonth(e.target.value)}
-                            className="month-select"
-                        >
-                            <option value="Tháng 5, 2025">Tháng 5, 2025</option>
-                            <option value="Tháng 4, 2025">Tháng 4, 2025</option>
-                            <option value="Tháng 3, 2025">Tháng 3, 2025</option>
-                        </select>
+                        {getTodayDate()}
                     </div>
-                    <button
-                        className="button icon-only outline"
-                        onClick={() => fetchAllDashboardData()}
-                    >
-                        <RefreshCcw className="icon-small" />
-                    </button>
                 </div>
             </div>
 

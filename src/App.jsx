@@ -8,6 +8,7 @@ import DashboardLayout from "./components/layout/DashboardLayout";
 import Dashboard from "./pages/dashboard/Dashboard";
 import Product from "./pages/product/Product";
 import AddProduct from "./pages/product/AddProduct";
+import EditProduct from "./pages/product/EditProduct";
 import Order from "./pages/order/Order";
 import Profile from "./pages/profile/Profile";
 import PrivateRoute from "./components/common/PrivateRoute";
@@ -74,7 +75,7 @@ function App() {
                             element={
                                 <PrivateRoute>
                                     <DashboardLayout>
-                                        <AddProduct editMode={true} />
+                                        <EditProduct editMode={true} />
                                     </DashboardLayout>
                                 </PrivateRoute>
                             }

@@ -10,11 +10,13 @@ import ErrorAlert from "../../components/common/ErrorAlert";
 function Order() {
     const [searchQuery, setSearchQuery] = useState("");
     const [selectedStatus, setSelectedStatus] = useState("");
+    const [fromDate, setFromDate] = useState("");
+    const [toDate, setToDate] = useState("");
     const [viewOrderDetails, setViewOrderDetails] = useState(null);
-    const [filterDropdownOpen, setFilterDropdownOpen] = useState(false);
     const [dropdownOpen, setDropdownOpen] = useState(null);
     const [currentPage, setCurrentPage] = useState(0);
     const [pageSize] = useState(10);
+    const [pageInput, setPageInput] = useState("");
 
     const {
         orders,
@@ -24,6 +26,9 @@ function Order() {
         pagination,
         loading,
         error,
+        goToPage,
+        nextPage,
+        previousPage,
         resetState
     } = useOrder();
 
@@ -35,7 +40,9 @@ function Order() {
                     page: currentPage,
                     size: pageSize,
                     status: selectedStatus || undefined,
-                    search: searchQuery || undefined
+                    search: searchQuery || undefined,
+                    fromDate: fromDate || undefined,
+                    toDate: toDate || undefined
                 });
             } catch (err) {
                 console.error("Lỗi khi lấy danh sách đơn hàng:", err);
@@ -43,7 +50,7 @@ function Order() {
         };
 
         fetchData();
-    }, [fetchOrders, currentPage, pageSize, selectedStatus, searchQuery]);
+    }, [fetchOrders, currentPage, pageSize, selectedStatus, searchQuery, fromDate, toDate]);
 
     // Hiển thị chi tiết đơn hàng
     const handleViewOrderDetail = async (orderId) => {
@@ -70,11 +77,6 @@ function Order() {
         }
     };
 
-    // Mở/đóng dropdown filter
-    const toggleFilterDropdown = () => {
-        setFilterDropdownOpen(!filterDropdownOpen);
-    };
-
     // Xử lý thay đổi trạng thái đơn hàng
     const handleStatusChange = async (orderId, newStatus) => {
         try {
@@ -90,6 +92,12 @@ function Order() {
         } catch (err) {
             console.error("Lỗi khi cập nhật trạng thái đơn hàng:", err);
         }
+    };
+
+    // Clear date filters
+    const clearDateFilters = () => {
+        setFromDate("");
+        setToDate("");
     };
 
     // Lấy class CSS cho badge trạng thái đơn hàng
@@ -127,16 +135,28 @@ function Order() {
         }
     };
 
-    // Xử lý phân trang
-    const handleNextPage = () => {
-        if (pagination && currentPage < pagination.totalPages - 1) {
-            setCurrentPage(currentPage + 1);
+    // Handle page input change
+    const handlePageInputChange = (e) => {
+        setPageInput(e.target.value);
+    };
+
+    // Handle page input submit
+    const handlePageInputSubmit = (e) => {
+        e.preventDefault();
+        const pageNumber = parseInt(pageInput);
+        if (pageNumber >= 1 && pageNumber <= pagination.totalPages) {
+            goToPage(pageNumber - 1); // Convert to 0-based index
+            setPageInput("");
+        } else {
+            // Show error or reset input
+            setPageInput("");
         }
     };
 
-    const handlePrevPage = () => {
-        if (currentPage > 0) {
-            setCurrentPage(currentPage - 1);
+    // Handle page input key press
+    const handlePageInputKeyPress = (e) => {
+        if (e.key === 'Enter') {
+            handlePageInputSubmit(e);
         }
     };
 
@@ -171,41 +191,68 @@ function Order() {
                             />
                         </div>
                         <div className="filter-actions">
-                            <div className="filter-dropdown">
-                                <button className="button outline small" onClick={toggleFilterDropdown}>
-                                    <Filter className="icon-small" />
-                                    Lọc
-                                    {selectedStatus && <span className="filter-badge">1</span>}
-                                </button>
-                                {filterDropdownOpen && (
-                                    <div className="dropdown-menu filter-menu">
-                                        <h4 className="dropdown-header">Lọc theo trạng thái</h4>
-                                        <div className="dropdown-divider"></div>
-                                        <select
-                                            className="filter-select"
-                                            value={selectedStatus}
-                                            onChange={(e) => setSelectedStatus(e.target.value)}
-                                        >
-                                            <option value="">Tất cả trạng thái</option>
-                                            <option value="DELIVERED">Đã giao hàng</option>
-                                            <option value="SHIPPED">Đang giao hàng</option>
-                                            <option value="CONFIRMED">Đã xác nhận</option>
-                                            <option value="PENDING">Chờ xác nhận</option>
-                                            <option value="CANCELLED">Đã hủy</option>
-                                        </select>
-                                        {/*{selectedStatus && (
-                                            <button className="button ghost small" onClick={() => setSelectedStatus("")}>
-                                                <X className="icon-small" />
-                                                Xóa bộ lọc
-                                            </button>
-                                        )}*/}
-                                    </div>
+                            {/* Permanent Status Filter */}
+                            <div className="status-filter">
+                                <select
+                                    id="status-select"
+                                    className="filter-select"
+                                    value={selectedStatus}
+                                    onChange={(e) => setSelectedStatus(e.target.value)}
+                                >
+                                    <option value="">Tất cả trạng thái</option>
+                                    <option value="DELIVERED">Đã giao hàng</option>
+                                    <option value="SHIPPED">Đang giao hàng</option>
+                                    <option value="CONFIRMED">Đã xác nhận</option>
+                                    <option value="PENDING">Chờ xác nhận</option>
+                                    <option value="CANCELLED">Đã hủy</option>
+                                </select>
+                                {selectedStatus && (
+                                    <button 
+                                        className="button ghost small clear-filter" 
+                                        onClick={() => setSelectedStatus("")}
+                                        title="Xóa bộ lọc"
+                                    >
+                                        <X className="icon-small" />
+                                    </button>
                                 )}
                             </div>
-                            <button className="button outline small">
-                                <Calendar className="icon-small" />
-                                Ngày
-                            </button>
+
+                            <div className="date-filter">
+                                <div className="date-input-group">
+                                    <label htmlFor="from-date" className="date-label"> Từ </label>
+                                    <input
+                                        id="from-date"
+                                        type="date"
+                                        className="date-input"
+                                        value={fromDate}
+                                        onChange={(e) => setFromDate(e.target.value)}
+                                        max={toDate || undefined}
+                                    />
+                                </div>
+                                
+                                
+                                <div className="date-input-group">
+                                    <label htmlFor="to-date" className="date-label"> đến </label>
+                                    <input
+                                        id="to-date"
+                                        type="date"
+                                        className="date-input"
+                                        value={toDate}
+                                        onChange={(e) => setToDate(e.target.value)}
+                                        min={fromDate || undefined}
+                                    />
+                                </div>
+                                
+                                {(fromDate || toDate) && (
+                                    <button 
+                                        className="button ghost small clear-date-filter" 
+                                        onClick={clearDateFilters}
+                                        title="Xóa bộ lọc ngày"
+                                    >
+                                        <X className="icon-small" />
+                                    </button>
+                                )}
+                            </div>
                         </div>
                     </div>
 
@@ -314,24 +361,56 @@ function Order() {
                         </table>
                     </div>
 
-                    <div className="pagination">
-                        <button
-                            className="button outline small"
-                            onClick={handlePrevPage}
-                            disabled={currentPage === 0}
-                        >
-                            Trước
-                        </button>
-                        <span className="pagination-info">
-                            Trang {currentPage + 1} / {pagination?.totalPages || 1}
-                        </span>
-                        <button
-                            className="button outline small"
-                            onClick={handleNextPage}
-                            disabled={!pagination || currentPage >= pagination.totalPages - 1}
-                        >
-                            Sau
-                        </button>
+                    <div className="pagination-container">
+                        <div className="pagination">
+                            <button
+                                className={`button-product outline small ${pagination.currentPage === 0 ? 'active' : ''}`}
+                                onClick={() => goToPage(0)}
+                                disabled={pagination.currentPage === 0}
+                            >
+                                Trang đầu
+                            </button>
+
+                            <button
+                                className="button outline small"
+                                disabled={!pagination.hasPrevious}
+                                onClick={previousPage}
+                            >
+                                Trang Trước
+                            </button>
+
+                            <div className="page-input-container">
+                                <input
+                                    type="number"
+                                    value={pageInput}
+                                    onChange={handlePageInputChange}
+                                    onKeyPress={handlePageInputKeyPress}
+                                    placeholder={`${pagination.currentPage + 1}`}
+                                    min="1"
+                                    max={pagination.totalPages}
+                                    className="button-product outline small "
+                                />
+                            </div>
+
+                            <button
+                                className="button outline small"
+                                disabled={!pagination.hasNext}
+                                onClick={nextPage}
+                            >
+                                Trang kế
+                            </button>
+                            <button
+                                className={`button-product outline small ${pagination.currentPage === pagination.totalPages - 1 || pagination.totalPages === 0 ? 'active' : ''}`}
+                                onClick={() => goToPage(pagination.totalPages - 1)}
+                                disabled={pagination.currentPage === pagination.totalPages-1 || pagination.totalPages === 0}
+                            >
+                                Trang cuối
+                            </button>
+                        </div>
+
+                       <div className="pagination-info">
+                            Hiển thị {orders.length} trên {pagination.totalElements || 0} đơn hàng
+                        </div>
                     </div>
                 </div>
             </div>

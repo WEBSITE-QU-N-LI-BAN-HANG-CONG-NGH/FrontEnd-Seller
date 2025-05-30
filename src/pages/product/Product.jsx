@@ -26,10 +26,12 @@ function Product() {
     const [deleteModalOpen, setDeleteModalOpen] = useState(false);
     const [selectedProduct, setSelectedProduct] = useState(null);
     const [filterDropdownOpen, setFilterDropdownOpen] = useState(false);
+    const [pageInput, setPageInput] = useState("");
 
     // Local filter state
     const [localFilters, setLocalFilters] = useState({
         category: '',
+        subcategory: '',
         minPrice: '',
         maxPrice: '',
         status: 'all'
@@ -114,7 +116,7 @@ function Product() {
     // Apply filters
     const handleApplyFilters = () => {
         const filtersToApply = {
-            category: localFilters.category,
+            category: localFilters.category, subcategory: localFilters.subcategory,
             minPrice: localFilters.minPrice ? parseInt(localFilters.minPrice) : null,
             maxPrice: localFilters.maxPrice ? parseInt(localFilters.maxPrice) : null,
             status: localFilters.status
@@ -123,57 +125,30 @@ function Product() {
         setFilterDropdownOpen(false);
     };
 
-    // Clear all filters
-    const handleClearFilters = () => {
-        setLocalFilters({
-            category: '',
-            minPrice: '',
-            maxPrice: '',
-            status: 'all'
-        });
-        setSearchQuery('');
-        clearFilters();
-        setFilterDropdownOpen(false);
+
+    // Handle page input change
+    const handlePageInputChange = (e) => {
+        setPageInput(e.target.value);
     };
 
-    // Generate page numbers to display
-        const generatePageNumbers = () => {
-        const pages = [];
-        const totalPages = pagination.totalPages;
-        const currentPage = pagination.currentPage; 
-
-        if (totalPages <= 7) {
-            // Show all pages if total is 7 or less
-            for (let i = 0; i < totalPages; i++) {
-                pages.push(i);
-            }
+    // Handle page input submit
+    const handlePageInputSubmit = (e) => {
+        e.preventDefault();
+        const pageNumber = parseInt(pageInput);
+        if (pageNumber >= 1 && pageNumber <= pagination.totalPages) {
+            goToPage(pageNumber - 1); // Convert to 0-based index
+            setPageInput("");
         } else {
-            // Always show first page (0)
-            pages.push(0);
-
-            if (currentPage > 2) {
-                pages.push('...');
-            }
-
-            // Show pages around current page
-            const startPage = Math.max(1, currentPage - 1);
-            const endPage = Math.min(currentPage + 1, totalPages - 2);
-            
-            for (let i = startPage; i <= endPage; i++) {
-                pages.push(i);
-            }
-
-            if (currentPage < totalPages - 3) {
-                pages.push('...');
-            }
-
-            // Always show last page
-            if (totalPages > 1) {
-                pages.push(totalPages - 1);
-            }
+            // Show error or reset input
+            setPageInput("");
         }
+    };
 
-        return pages;
+    // Handle page input key press
+    const handlePageInputKeyPress = (e) => {
+        if (e.key === 'Enter') {
+            handlePageInputSubmit(e);
+        }
     };
 
     // Close dropdowns when clicking outside
@@ -254,6 +229,20 @@ function Product() {
                                             </div>
 
                                             <div className="filter-group">
+                                                <label>Danh mục con</label>
+                                                <select
+                                                    value={localFilters.subcategory}
+                                                    onChange={(e) => setLocalFilters({...localFilters, subcategory: e.target.value})}
+                                                    className="filter-select"
+                                                >
+                                                    <option value="">Tất cả danh mục</option>
+                                                    {categories.map(cat => (
+                                                        <option key={cat} value={cat}>{cat}</option>
+                                                    ))}
+                                                </select>
+                                            </div>
+
+                                            <div className="filter-group">
                                                 <label>Khoảng giá</label>
                                                 <div className="price-range">
                                                     <input
@@ -289,19 +278,13 @@ function Product() {
                                         </div>
 
                                         <div className="filter-dropdown-footer">
-                                            <button
-                                                className="button outline small"
-                                                onClick={handleClearFilters}
-                                            >
-                                                Xóa lọc
-                                            </button>
-                                            <button
-                                                className="button primary small"
-                                                onClick={handleApplyFilters}
-                                            >
-                                                Áp dụng
-                                            </button>
-                                        </div>
+                                                <button
+                                                    className="button primary small"
+                                                    onClick={handleApplyFilters}
+                                                >
+                                                    Áp dụng
+                                                </button>
+                                    </div>
                                     </div>
                                
                             </div>
@@ -406,46 +389,56 @@ function Product() {
                         </table>
                     </div>
 
-                    {/* Pagination controls */}
                     {pagination.totalPages > 1 && (
                         <div className="pagination-container">
                             <div className="pagination">
+                                <button
+                                    className={`button-product outline small ${pagination.currentPage === 0 ? 'active' : ''}`}
+                                    onClick={() => goToPage(0)}
+                                    disabled={pagination.currentPage === 0}
+                                >
+                                    Trang đầu
+                                </button>
+
                                 <button
                                     className="button outline small"
                                     disabled={!pagination.hasPrevious}
                                     onClick={previousPage}
                                 >
-                                    Trước
+                                    Trang Trước
                                 </button>
 
-                                {/* Page numbers */}
-                                {generatePageNumbers().map((page, index) => (
-                                    page === '...' ? (
-                                        <span key={`ellipsis-${index}`} className="pagination-ellipsis">...</span>
-                                    ) : (
-                                        <button
-                                            key={page}
-                                            className={`button outline small ${page === pagination.currentPage ? 'active' : ''}`}
-                                            onClick={() => goToPage(page)}
-                                        >
-                                            {page + 1}
-                                        </button>
-                                    )
-                                ))}
+                                <div className="page-input-container">
+                                    <input
+                                        type="number"
+                                        value={pageInput}
+                                        onChange={handlePageInputChange}
+                                        onKeyPress={handlePageInputKeyPress}
+                                        placeholder={`${pagination.currentPage + 1}`}
+                                        min="1"
+                                        max={pagination.totalPages}
+                                        className="button-product outline small "
+                                    />
+                                </div>
 
                                 <button
                                     className="button outline small"
                                     disabled={!pagination.hasNext}
                                     onClick={nextPage}
                                 >
-                                    Sau
+                                    Trang kế
                                 </button>
+                                    <button
+                                        className={`button-product outline small ${pagination.currentPage === pagination.totalPages - 1 || pagination.totalPages === 0 ? 'active' : ''}`}
+                                        onClick={() => goToPage(pagination.totalPages - 1)}
+                                        disabled={pagination.currentPage === pagination.totalPages-1 || pagination.totalPages === 0}
+                                    >
+                                        Trang cuối
+                                    </button>
                             </div>
 
                            <div className="pagination-info">
-                                Trang {pagination.currentPage + 1} / {pagination.totalPages}
-                                <span className="separator">•</span>
-                                Hiển thị {products.length} trên {pagination.totalElements} sản phẩm
+                                Hiển thị {products.length} trên {pagination.totalElements || 0} sản phẩm
                             </div>
                         </div>
                     )}
