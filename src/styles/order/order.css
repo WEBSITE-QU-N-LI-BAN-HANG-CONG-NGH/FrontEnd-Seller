@@ -1,3 +1,7 @@
+div {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
 .orders-page {
     display: flex;
     flex-direction: column;
@@ -240,6 +244,16 @@
     border-bottom: 1px solid #e2e8f0;
 }
 
+.edit-button {
+    padding: 0.5rem;
+    background-color: white;
+    border-radius: 0.375rem;
+    border: 1px solid #e2e8f0;
+    font-size: 0.875rem;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    cursor: pointer;
+}
+
 .orders-table tr:last-child td {
     border-bottom: none;
 }
@@ -359,6 +373,10 @@
 
 .actions-cell {
     text-align: right;
+    align-items: center;
+    display: flex;
+    justify-content: center;
+    height: 100%;
 }
 
 .dropdown {

@@ -207,8 +207,8 @@ function Product() {
             <div className="card">
                 <div className="card-header">
                     <h2 className="card-title">
-                        Danh sách sản phẩm
-                        <span className="product-count">({pagination.totalElements} sản phẩm)</span>
+                        Danh sách sản phẩm ( 
+                        <span className="product-count">{pagination.totalElements} sản phẩm)</span>
                     </h2>
                 </div>
                 <div className="card-content">

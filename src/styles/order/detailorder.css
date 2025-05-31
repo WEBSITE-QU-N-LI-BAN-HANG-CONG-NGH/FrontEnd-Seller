@@ -1,4 +1,5 @@
-/* DetailOrder Component Styles */
+
+
 .detail-order-modal {
     max-width: 1000px;
     width: 95%;
@@ -367,6 +368,12 @@
     height: 16px;
 }
 
+    .items-table th {
+        padding: 8px;
+        font-size: 0.875rem;
+        text-align: center;
+    }
+
 /* Responsive Design */
 @media (max-width: 768px) {
     .detail-order-modal {
@@ -421,10 +428,15 @@
         height: 80px;
     }
 
-    .items-table th,
     .items-table td {
         padding: 8px;
         font-size: 0.875rem;
+    }
+
+    .items-table th {
+        padding: 8px;
+        font-size: 0.875rem;
+        text-align: center;
     }
 }
 

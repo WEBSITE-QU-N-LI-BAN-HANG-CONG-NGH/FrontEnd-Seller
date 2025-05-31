@@ -312,11 +312,10 @@ function Order() {
                                         </td>
                                         <td className="actions-cell">
                                             <button
-                                                className="button primary small"
+                                                className="edit-button"
                                                 onClick={() => handleViewOrderDetail(order.id)}
                                             >
                                                 <Eye className="icon-small" />
-                                                Xem chi tiết
                                             </button>
                                         </td>
                                     </tr>
