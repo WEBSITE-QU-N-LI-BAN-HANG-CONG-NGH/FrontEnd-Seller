@@ -77,7 +77,6 @@ const useProduct = () => {
                 isLast: paginationData.isLast
             });
 
-            console.log('Fetched products:', data);
             return data;
         } catch (err) {
             setError(err.response?.data?.message || 'Không thể lấy danh sách sản phẩm');
@@ -85,14 +84,31 @@ const useProduct = () => {
         } finally {
             setLoading(false);
         }
-    }, []); // Remove filters dependency
+    }, []); // Remove dependencies to prevent loops
 
-    // Update filters
+    // Add getProductById method
+    const getProductById = useCallback(async (productId) => {
+        setLoading(true);
+        try {
+            const response = await productService.getProductById(productId);
+            return response.data.data;
+        } catch (err) {
+            setError(err.response?.data?.message || 'Không thể lấy thông tin sản phẩm');
+            throw err;
+        } finally {
+            setLoading(false);
+        }
+    }, []);
+
+    // Fix updateFilters to use current filters state
     const updateFilters = useCallback((newFilters) => {
-        setFilters(prev => ({ ...prev, ...newFilters }));
-        // Reset to first page when filters change
-        fetchProducts(0, pagination.pageSize, 'createdAt', 'desc', { ...filters, ...newFilters });
-    }, [fetchProducts, pagination.pageSize, filters]);
+        setFilters(prev => {
+            const updatedFilters = { ...prev, ...newFilters };
+            // Call fetchProducts with updated filters
+            fetchProducts(0, pagination.pageSize, 'createdAt', 'desc', updatedFilters);
+            return updatedFilters;
+        });
+    }, [fetchProducts, pagination.pageSize]);
 
     // Clear filters
     const clearFilters = useCallback(() => {
@@ -241,6 +257,7 @@ const useProduct = () => {
         fetchProducts,
         fetchProductDetail,
         fetchCategories,
+        getProductById,
         createProduct,
         updateProduct,
         deleteProduct,

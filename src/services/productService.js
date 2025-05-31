@@ -77,6 +77,10 @@ const productService = {
     getFilterStats: () => {
         return api.get('/seller/products/filter-stats');
     },
+
+    getProductById: (id) => {
+        return api.get(`/seller/products/${id}`);
+    },
 };
 
 export default productService;

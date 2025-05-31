@@ -1,19 +1,9 @@
-import { useState, useEffect } from "react";
-import { useNavigate, useParams } from "react-router-dom";
-import {
-    ArrowLeft,
-    Plus,
-    Trash2,
-    Save,
-    ImagePlus,
-    X,
-    Info,
-    Check,
-    AlertCircle
-} from "lucide-react";
+import {useEffect, useState} from "react";
+import {useNavigate, useParams} from "react-router-dom";
+import {AlertCircle, ArrowLeft, ImagePlus, Info, Save, X} from "lucide-react";
 import "../../styles/product/add_product.css";
 import useProduct from "../../hooks/useProduct";
-import { isNotEmpty, isPositiveNumber } from "../../utils/validators";
+import {isNotEmpty, isPositiveNumber} from "../../utils/validators";
 import LoadingSpinner from "../../components/common/LoadingSpinner";
 import ErrorAlert from "../../components/common/ErrorAlert";
 

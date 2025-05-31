@@ -1,6 +1,6 @@
 // src/hooks/useDashboard.js
 
-import { useState, useCallback } from 'react';
+import {useCallback, useState} from 'react';
 import dashboardService from '../services/dashboardService';
 
 const useDashboard = () => {

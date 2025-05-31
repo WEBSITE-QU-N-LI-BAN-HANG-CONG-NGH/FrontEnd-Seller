@@ -5,6 +5,10 @@ import { formatCurrency, formatDate } from "../../utils/format.js";
 import "../../styles/order/detailorder.css"
 
 function DetailOrder({ order, onClose, onStatusUpdate }) {
+    console.log("=== DEBUG ORDER DATA ===");
+    console.log("Full order object:", order);
+    console.log("order.user:", order.user);
+    console.log("All order keys:", Object.keys(order));
     const [isUpdating, setIsUpdating] = useState(false);
     const [currentStatus, setCurrentStatus] = useState(order.orderStatus); // Add local state for status
 
@@ -147,11 +151,11 @@ function DetailOrder({ order, onClose, onStatusUpdate }) {
                             <div className="address-info">
                                 {order.shippingAddress ? (
                                     <div className="address-details">
-                                        <p><strong>{order.shippingAddress.firstName} {order.shippingAddress.lastName}</strong></p>
-                                        <p>{order.shippingAddress.streetAddress}</p>
-                                        <p>{order.shippingAddress.city}, {order.shippingAddress.state}</p>
-                                        <p>Mã bưu điện: {order.shippingAddress.zipCode}</p>
-                                        <p>Điện thoại: {order.shippingAddress.mobile}</p>
+                                        <p><strong>{order.shippingAddress.fullName}</strong></p>
+                                        <p>{order.shippingAddress.street}, {order.shippingAddress.ward}</p>
+                                        <p>{order.shippingAddress.district}, {order.shippingAddress.province}</p>
+                                        <p>Điện thoại: {order.shippingAddress.phoneNumber}</p>
+                                        {order.shippingAddress.note && <p>Ghi chú: {order.shippingAddress.note}</p>}
                                     </div>
                                 ) : (
                                     <p className="no-info">Không có thông tin địa chỉ giao hàng</p>
@@ -168,11 +172,11 @@ function DetailOrder({ order, onClose, onStatusUpdate }) {
                             <div className="payment-summary">
                                 <div className="payment-row">
                                     <span>Tổng tiền hàng:</span>
-                                    <span>{formatCurrency(order.totalPrice || 0)}</span>
+                                    <span>{formatCurrency(order.originalPrice || 0)}</span>
                                 </div>
                                 <div className="payment-row">
                                     <span>Giảm giá:</span>
-                                    <span className="discount">-{formatCurrency((order.totalPrice || 0) - (order.totalDiscountedPrice || 0))}</span>
+                                    <span className="discount">-{formatCurrency(order.discount || 0)}</span>
                                 </div>
                                 <div className="payment-row total">
                                     <span>Tổng thanh toán:</span>

@@ -1,5 +1,5 @@
 // src/hooks/useSeller.js
-import { useState, useEffect, useCallback } from 'react';
+import {useCallback, useState} from 'react';
 import sellerService from '../services/sellerService';
 
 const useSeller = () => {

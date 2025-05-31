@@ -1,20 +1,10 @@
 // src/pages/product/AddProduct.jsx
-import { useState} from "react";
-import { useNavigate } from "react-router-dom";
-import {
-    ArrowLeft,
-    Plus,
-    Trash2,
-    Save,
-    ImagePlus,
-    X,
-    Info,
-    Check,
-    AlertCircle
-} from "lucide-react";
+import {useState} from "react";
+import {useNavigate} from "react-router-dom";
+import {AlertCircle, ArrowLeft, ImagePlus, Info, Save, X} from "lucide-react";
 import "../../styles/product/add_product.css";
 import useProduct from "../../hooks/useProduct";
-import { isNotEmpty, isPositiveNumber } from "../../utils/validators";
+import {isNotEmpty, isPositiveNumber} from "../../utils/validators";
 import LoadingSpinner from "../../components/common/LoadingSpinner";
 import ErrorAlert from "../../components/common/ErrorAlert";
 
@@ -25,6 +15,7 @@ function AddProduct() {
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [activeTab, setActiveTab] = useState("basic");
     const [productImages, setProductImages] = useState([]);
+    const [sizes, setSizes] = useState([{ name: 'Default', quantity: '' }]);
     // Fixed specifications based on backend structure
     const [specifications, setSpecifications] = useState({
         weight: "",
@@ -53,27 +44,6 @@ function AddProduct() {
         featured: false,
         active: true
 });
-
-    // Xử lý thêm kích thước sản phẩm
-    const handleAddSize = () => {
-        const newSizes = [...productData.sizes];
-        newSizes.push({ name: "", quantity: 0 });
-        setProductData({ ...productData, sizes: newSizes });
-    };
-
-    // Xử lý xóa kích thước sản phẩm
-    const handleRemoveSize = (index) => {
-        const newSizes = [...productData.sizes];
-        newSizes.splice(index, 1);
-        setProductData({ ...productData, sizes: newSizes });
-    };
-
-    // Xử lý thay đổi kích thước sản phẩm
-    const handleSizeChange = (index, field, value) => {
-        const newSizes = [...productData.sizes];
-        newSizes[index][field] = value;
-        setProductData({ ...productData, sizes: newSizes });
-    };
 
     // Xử lý thay đổi thông số kỹ thuật
     const handleSpecChange = (field, value) => {
@@ -167,6 +137,23 @@ function AddProduct() {
         setProductImages([...productImages, null]);
     };
 
+    const handleSizeChange = (index, field, value) => {
+        const newSizes = [...sizes];
+        newSizes[index][field] = value;
+        setSizes(newSizes);
+    };
+
+    const addSize = () => {
+        setSizes([...sizes, { name: '', quantity: '' }]);
+    };
+
+    const removeSize = (index) => {
+        if (sizes.length > 1) {
+            const newSizes = sizes.filter((_, i) => i !== index);
+            setSizes(newSizes);
+        }
+    };
+
     // Xử lý gửi form
     const handleSubmit = async (e) => {
         e.preventDefault();
@@ -178,25 +165,48 @@ function AddProduct() {
         setIsSubmitting(true);
 
         try {
-            // Chuẩn bị dữ liệu sản phẩm
+            // Prepare product data with specifications included
             const formattedData = {
-                ...productData,
+                title: productData.title,
+                description: productData.description,
                 price: parseInt(productData.price),
                 quantity: parseInt(productData.quantity),
                 discountPersent: parseInt(productData.discountPersent || 0),
-                // Include specifications in the main data object
-                ...specifications,
-                // Định dạng sizes cho API
-                sizes: productData.sizes.map(size => ({
-                    name: size.name,
-                    quantity: parseInt(size.quantity)
-                }))
+                brand: productData.brand,
+                color: productData.color,
+                topLevelCategory: productData.topLevelCategory,
+                secondLevelCategory: productData.secondLevelCategory,
+
+                // Include all specifications from the specifications state
+                weight: specifications.weight || null,
+                dimension: specifications.dimension || null,
+                batteryType: specifications.batteryType || null,
+                batteryCapacity: specifications.batteryCapacity || null,
+                ramCapacity: specifications.ramCapacity || null,
+                romCapacity: specifications.romCapacity || null,
+                screenSize: specifications.screenSize || null,
+                detailedReview: specifications.detailedReview || null,
+                powerfulPerformance: specifications.powerfulPerformance || null,
+                connectionPort: specifications.connectionPort || null,
+
+                // // Format sizes for API
+                // sizes: productData.sizes.map(size => ({
+                //     name: size.name,
+                //     quantity: parseInt(size.quantity)
+                // }))
+
+                sizes: sizes
+                    .filter(size => size.name && size.quantity)
+                    .map(size => ({
+                        name: size.name,
+                        quantity: parseInt(size.quantity)
+                    }))
             };
 
-            // Gọi API tạo sản phẩm
+            // Call API to create product
             const result = await createProduct(formattedData);
 
-            // Upload hình ảnh cho sản phẩm đã tạo
+            // Upload images for created product
             if (result.id) {
                 const uploadPromises = productImages
                     .filter(img => img && img.file)
@@ -205,7 +215,7 @@ function AddProduct() {
                 await Promise.all(uploadPromises);
             }
 
-            // Chuyển đến trang danh sách sản phẩm
+            // Navigate to products list
             navigate("/dashboard/products");
 
         } catch (error) {
@@ -468,6 +478,50 @@ function AddProduct() {
                                 </div>
                             </div>
                         )}
+                        <div className="separator"></div>
+
+                        <div className="form-section">
+                            <h3>Quản lý kích thước và số lượng</h3>
+                            {sizes.map((size, index) => (
+                                <div key={index} className="form-row">
+                                    <div className="form-group">
+                                        <label className="form-label">Kích thước/Phiên bản</label>
+                                        <input
+                                            className="form-input"
+                                            placeholder="VD: S, M, L hoặc 128GB, 256GB..."
+                                            value={size.name}
+                                            onChange={(e) => handleSizeChange(index, 'name', e.target.value)}
+                                        />
+                                    </div>
+                                    <div className="form-group">
+                                        <label className="form-label">Số lượng</label>
+                                        <input
+                                            type="number"
+                                            className="form-input"
+                                            placeholder="Số lượng"
+                                            min="0"
+                                            value={size.quantity}
+                                            onChange={(e) => handleSizeChange(index, 'quantity', e.target.value)}
+                                        />
+                                    </div>
+                                    <div className="form-group">
+                                        {sizes.length > 1 && (
+                                            <button
+                                                type="button"
+                                                className="button danger"
+                                                onClick={() => removeSize(index)}
+                                            >
+                                                Xóa
+                                            </button>
+                                        )}
+                                    </div>
+                                </div>
+                            ))}
+
+                            <button type="button" className="button outline" onClick={addSize}>
+                                Thêm kích thước
+                            </button>
+                        </div>
 
                         {activeTab === "specifications" && (
                             <div className="card">
