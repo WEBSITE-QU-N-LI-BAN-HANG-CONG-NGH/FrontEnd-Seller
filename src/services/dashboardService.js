@@ -8,7 +8,7 @@ const dashboardService = {
     },
 
     getMonthlyRevenue: () => {
-        return api.get('/seller/dashboard/revenue');
+        return api.get('/seller/dashboard/revenue/month');
     },
 
     getOrderStats: () => {

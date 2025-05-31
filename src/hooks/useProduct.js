@@ -7,6 +7,10 @@ const useProduct = () => {
     const [product, setProduct] = useState(null);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState(null);
+    const [categories, setCategories] = useState({
+        topLevel: [],
+        secondLevel: {}
+    });
 
     // Pagination state
     const [pagination, setPagination] = useState({
@@ -24,29 +28,43 @@ const useProduct = () => {
     const [filters, setFilters] = useState({
         search: '',
         category: '',
+        subcategory: '',
         minPrice: null,
         maxPrice: null,
-        status: 'all' // all, inStock, outOfStock
+        status: 'all'
     });
 
-    // Fetch products with pagination and filters
+    const fetchCategories = useCallback(async () => {
+        try {
+            const response = await productService.getSellerCategories();
+            setCategories(response.data.data);
+            return response.data.data;
+        } catch (err) {
+            console.error('Error fetching categories:', err);
+            return { topLevel: [], secondLevel: {} };
+        }
+    }, []);
+
     const fetchProducts = useCallback(async (page = 0, size = 10, sortBy = 'createdAt', sortDir = 'desc', currentFilters = null) => {
         setLoading(true);
         try {
+            const filtersToUse = currentFilters || filters;
             const response = await productService.getSellerProducts({
                 page,
                 size,
                 sortBy,
                 sortDir,
-                ...(currentFilters || filters)
+                search: filtersToUse.search,
+                category: filtersToUse.category,
+                subcategory: filtersToUse.subcategory,
+                minPrice: filtersToUse.minPrice,
+                maxPrice: filtersToUse.maxPrice,
+                status: filtersToUse.status
             });
 
             const data = response.data.data;
-
-            // Fix: Correctly destructure pagination from response
             setProducts(data.products || []);
 
-            // The pagination object is nested inside data
             const paginationData = data.pagination;
             setPagination({
                 currentPage: paginationData.currentPage,
@@ -60,7 +78,6 @@ const useProduct = () => {
             });
 
             console.log('Fetched products:', data);
-            console.log('Pagination state:', paginationData);
             return data;
         } catch (err) {
             setError(err.response?.data?.message || 'Không thể lấy danh sách sản phẩm');
@@ -68,7 +85,7 @@ const useProduct = () => {
         } finally {
             setLoading(false);
         }
-    }, []); // Remove filters dependency to prevent infinite loop
+    }, []); // Remove filters dependency
 
     // Update filters
     const updateFilters = useCallback((newFilters) => {
@@ -220,8 +237,10 @@ const useProduct = () => {
         error,
         pagination,
         filters,
+        categories,
         fetchProducts,
         fetchProductDetail,
+        fetchCategories,
         createProduct,
         updateProduct,
         deleteProduct,

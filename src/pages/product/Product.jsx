@@ -27,6 +27,7 @@ function Product() {
     const [selectedProduct, setSelectedProduct] = useState(null);
     const [filterDropdownOpen, setFilterDropdownOpen] = useState(false);
     const [pageInput, setPageInput] = useState("");
+    const [subcategories, setSubcategories] = useState([]);
 
     // Local filter state
     const [localFilters, setLocalFilters] = useState({
@@ -43,7 +44,9 @@ function Product() {
         error,
         pagination,
         filters,
+        categories,
         fetchProducts,
+        fetchCategories,
         deleteProduct,
         updateFilters,
         clearFilters,
@@ -56,6 +59,7 @@ function Product() {
     // Fetch products when component mounts - only once
     useEffect(() => {
         fetchProducts();
+        fetchCategories();
     }, []); // Remove fetchProducts dependency
 
     // Handle search with debounce
@@ -165,156 +169,21 @@ function Product() {
         return () => document.removeEventListener("click", handleClickOutside);
     }, []);
 
-<<<<<<< Updated upstream
+    useEffect(() => {
+        if (localFilters.category) {
+            // Get subcategories for selected category
+            const categoryProducts = products.filter(p => p.topLevelCategory === localFilters.category);
+            const uniqueSubcategories = [...new Set(categoryProducts.map(p => p.category?.name).filter(Boolean))];
+            setSubcategories(uniqueSubcategories);
+        } else {
+            setSubcategories([]);
+            setLocalFilters(prev => ({ ...prev, subcategory: '' }));
+        }
+    }, [localFilters.category, products]);
+
     if (loading && products.length === 0) {
         return <LoadingSpinner />;
     }
-=======
-        // Handle delete button click
-        const handleDeleteClick = (e, product) => {
-            e.stopPropagation();
-            setSelectedProduct(product);
-            setDeleteModalOpen(true);
-            setDropdownOpen(null);
-        };
-
-        // Handle confirm delete
-        const handleConfirmDelete = async () => {
-            if (selectedProduct) {
-                try {
-                    await deleteProduct(selectedProduct.id);
-                    setDeleteModalOpen(false);
-                    setSelectedProduct(null);
-                } catch (err) {
-                    console.error("Lỗi khi xóa sản phẩm:", err);
-                }
-            }
-        };
-
-        // Handle cancel delete
-        const handleCancelDelete = () => {
-            setDeleteModalOpen(false);
-            setSelectedProduct(null);
-        };
-
-        // Handle edit product
-        const handleEditClick = (e, productId) => {
-            e.stopPropagation();
-            navigate(`/dashboard/products/edit/${productId}`);
-            setDropdownOpen(null);
-        };
-
-        // Apply filters
-        const handleApplyFilters = () => {
-            const filtersToApply = {
-                topLevelCategory: localFilters.category,
-                minPrice: localFilters.minPrice ? parseInt(localFilters.minPrice) : null,
-                maxPrice: localFilters.maxPrice ? parseInt(localFilters.maxPrice) : null,
-                status: localFilters.status
-            };
-            updateFilters(filtersToApply);
-            setFilterDropdownOpen(false);
-        };
-
-        // Clear all filters
-        const handleClearFilters = () => {
-            setLocalFilters({
-                category: '',
-                minPrice: '',
-                maxPrice: '',
-                status: 'all'
-            });
-            setSearchQuery('');
-            clearFilters();
-            setFilterDropdownOpen(false);
-        };
-
-        // Generate page numbers to display
-            const generatePageNumbers = () => {
-            const pages = [];
-            const totalPages = pagination.totalPages;
-            const currentPage = pagination.currentPage;
-    // Handle page input change
-    const handlePageInputChange = (e) => {
-        setPageInput(e.target.value);
-    };
-
-            if (totalPages <= 7) {
-                // Show all pages if total is 7 or less
-                for (let i = 0; i < totalPages; i++) {
-                    pages.push(i);
-                }
-            } else {
-                // Always show first page (0)
-                pages.push(0);
-
-                if (currentPage > 2) {
-                    pages.push('...');
-                }
-
-                // Show pages around current page
-                const startPage = Math.max(1, currentPage - 1);
-                const endPage = Math.min(currentPage + 1, totalPages - 2);
-
-                for (let i = startPage; i <= endPage; i++) {
-                    pages.push(i);
-                }
-
-                if (currentPage < totalPages - 3) {
-                    pages.push('...');
-                }
-    // Handle page input submit
-    const handlePageInputSubmit = (e) => {
-        e.preventDefault();
-        const pageNumber = parseInt(pageInput);
-        if (pageNumber >= 1 && pageNumber <= pagination.totalPages) {
-            goToPage(pageNumber - 1); // Convert to 0-based index
-            setPageInput("");
-        } else {
-            // Show error or reset input
-            setPageInput("");
-        }
-    };
-
-    // Handle page input key press
-    const handlePageInputKeyPress = (e) => {
-        if (e.key === 'Enter') {
-            handlePageInputSubmit(e);
-        }
-    };
-                // Always show last page
-                if (totalPages > 1) {
-                    pages.push(totalPages - 1);
-                }
-            }
-
-            return pages;
-        };
-
-        // Close dropdowns when clicking outside
-        useEffect(() => {
-            const handleClickOutside = (e) => {
-                if (!e.target.closest('.dropdown')) {
-                    setDropdownOpen(null);
-                }
-            };
-            document.addEventListener("click", handleClickOutside);
-            return () => document.removeEventListener("click", handleClickOutside);
-        }, []);
-
-        if (loading && products.length === 0) {
-            return <LoadingSpinner />;
-        }
-
-        if (error) {
-            return (
-                <ErrorAlert
-                    message={error}
-                    onDismiss={() => resetState()}
-                />
-            );
-        }
->>>>>>> Stashed changes
 
     if (error) {
         return (
@@ -324,9 +193,6 @@ function Product() {
             />
         );
     }
-
-    // Get unique categories from products
-    const categories = [...new Set(products.map(p => p.topLevelCategory).filter(Boolean))];
 
     return (
         <div className="products-page">
@@ -359,85 +225,83 @@ function Product() {
                         </div>
                         <div className="filter-actions">
                             <div className="filter-dropdown-container">
-                                    <div className="filter-dropdown">
-                                        <div className="filter-dropdown-content">
-                                            <div className="filter-group">
-                                                <label>Danh mục</label>
-                                                <select
-                                                    value={localFilters.category}
-                                                    onChange={(e) => setLocalFilters({...localFilters, category: e.target.value})}
-                                                    className="filter-select"
-                                                >
-                                                    <option value="">Tất cả danh mục</option>
-                                                    {categories.map(cat => (
-                                                        <option key={cat} value={cat}>{cat}</option>
+                                <div className="filter-dropdown">
+                                    <div className="filter-dropdown-content">
+                                        <div className="filter-group">
+                                            <label>Danh mục</label>
+                                            <select
+                                                value={localFilters.category}
+                                                onChange={(e) => setLocalFilters({...localFilters, category: e.target.value, subcategory: ''})}
+                                                className="filter-select"
+                                            >
+                                                <option value="">Tất cả</option>
+                                                {categories.topLevel.map(cat => (
+                                                    <option key={cat} value={cat}>{cat}</option>
+                                                ))}
+                                            </select>
+                                        </div>
+
+                                        <div className="filter-group">
+                                            <label>Danh mục con</label>
+                                            <select
+                                                value={localFilters.subcategory}
+                                                onChange={(e) => setLocalFilters({...localFilters, subcategory: e.target.value})}
+                                                className="filter-select"
+                                                disabled={!localFilters.category}
+                                            >
+                                                <option value="">Tất cả</option>
+                                                {localFilters.category && categories.secondLevel[localFilters.category] &&
+                                                    categories.secondLevel[localFilters.category].map(subcat => (
+                                                        <option key={subcat} value={subcat}>{subcat}</option>
                                                     ))}
-                                                </select>
-                                            </div>
+                                            </select>
+                                        </div>
 
-                                            <div className="filter-group">
-                                                <label>Danh mục con</label>
-                                                <select
-                                                    value={localFilters.subcategory}
-                                                    onChange={(e) => setLocalFilters({...localFilters, subcategory: e.target.value})}
-                                                    className="filter-select"
-                                                >
-                                                    <option value="">Tất cả danh mục</option>
-                                                    {categories.map(cat => (
-                                                        <option key={cat} value={cat}>{cat}</option>
-                                                    ))}
-                                                </select>
-                                            </div>
-
-                                            <div className="filter-group">
-                                                <label>Khoảng giá</label>
-                                                <div className="price-range">
-                                                    <input
-                                                        type="number"
-                                                        placeholder="Từ"
-                                                        value={localFilters.minPrice}
-                                                        onChange={(e) => setLocalFilters({...localFilters, minPrice: e.target.value})}
-                                                        className="filter-input"
-                                                    />
-                                                    <span> - </span>
-                                                    <input
-                                                        type="number"
-                                                        placeholder="Đến"
-                                                        value={localFilters.maxPrice}
-                                                        onChange={(e) => setLocalFilters({...localFilters, maxPrice: e.target.value})}
-                                                        className="filter-input"
-                                                    />
-                                                </div>
-                                            </div>
-
-                                            <div className="filter-group">
-                                                <label>Trạng thái</label>
-                                                <select
-                                                    value={localFilters.status}
-                                                    onChange={(e) => setLocalFilters({...localFilters, status: e.target.value})}
-                                                    className="filter-select"
-                                                >
-                                                    <option value="all">Tất cả</option>
-                                                    <option value="inStock">Còn hàng</option>
-                                                    <option value="outOfStock">Hết hàng</option>
-                                                </select>
+                                        <div className="filter-group">
+                                            <label>Khoảng giá</label>
+                                            <div className="price-range">
+                                                <input
+                                                    type="number"
+                                                    placeholder="Từ"
+                                                    value={localFilters.minPrice}
+                                                    onChange={(e) => setLocalFilters({...localFilters, minPrice: e.target.value})}
+                                                    className="filter-input"
+                                                />
+                                                <span> - </span>
+                                                <input
+                                                    type="number"
+                                                    placeholder="Đến"
+                                                    value={localFilters.maxPrice}
+                                                    onChange={(e) => setLocalFilters({...localFilters, maxPrice: e.target.value})}
+                                                    className="filter-input"
+                                                />
                                             </div>
                                         </div>
 
-                                        <div className="filter-dropdown-footer">
-                                                <button
-                                                    className="button primary small"
-                                                    onClick={handleApplyFilters}
-                                                >
-                                                    Áp dụng
-                                                </button>
+                                        <div className="filter-group">
+                                            <label>Trạng thái</label>
+                                            <select
+                                                value={localFilters.status}
+                                                onChange={(e) => setLocalFilters({...localFilters, status: e.target.value})}
+                                                className="filter-select"
+                                            >
+                                                <option value="all">Tất cả</option>
+                                                <option value="inStock">Còn hàng</option>
+                                                <option value="outOfStock">Hết hàng</option>
+                                            </select>
+                                        </div>
                                     </div>
-<<<<<<< Updated upstream
-                                    </div>
-                               
-=======
 
->>>>>>> Stashed changes
+                                    <div className="filter-dropdown-footer">
+                                        <button
+                                            className="button primary small"
+                                            onClick={handleApplyFilters}
+                                        >
+                                            Áp dụng
+                                        </button>
+                                    </div>
+                                </div>
+
                             </div>
                         </div>
                     </div>
@@ -540,15 +404,10 @@ function Product() {
                         </table>
                     </div>
 
-<<<<<<< Updated upstream
-=======
-                    {/* Pagination controls */}
->>>>>>> Stashed changes
                     {pagination.totalPages > 1 && (
                         <div className="pagination-container">
                             <div className="pagination">
                                 <button
-<<<<<<< Updated upstream
                                     className={`button-product outline small ${pagination.currentPage === 0 ? 'active' : ''}`}
                                     onClick={() => goToPage(0)}
                                     disabled={pagination.currentPage === 0}
@@ -557,13 +416,10 @@ function Product() {
                                 </button>
 
                                 <button
-=======
->>>>>>> Stashed changes
                                     className="button outline small"
                                     disabled={!pagination.hasPrevious}
                                     onClick={previousPage}
                                 >
-<<<<<<< Updated upstream
                                     Trang Trước
                                 </button>
 
@@ -579,55 +435,25 @@ function Product() {
                                         className="button-product outline small "
                                     />
                                 </div>
-=======
-                                    Trước
-                                </button>
-
-                                {/* Page numbers */}
-                                {generatePageNumbers().map((page, index) => (
-                                    page === '...' ? (
-                                        <span key={`ellipsis-${index}`} className="pagination-ellipsis">...</span>
-                                    ) : (
-                                        <button
-                                            key={page}
-                                            className={`button outline small ${page === pagination.currentPage ? 'active' : ''}`}
-                                            onClick={() => goToPage(page)}
-                                        >
-                                            {page + 1}
-                                        </button>
-                                    )
-                                ))}
->>>>>>> Stashed changes
 
                                 <button
                                     className="button outline small"
                                     disabled={!pagination.hasNext}
                                     onClick={nextPage}
                                 >
-<<<<<<< Updated upstream
                                     Trang kế
                                 </button>
-                                    <button
-                                        className={`button-product outline small ${pagination.currentPage === pagination.totalPages - 1 || pagination.totalPages === 0 ? 'active' : ''}`}
-                                        onClick={() => goToPage(pagination.totalPages - 1)}
-                                        disabled={pagination.currentPage === pagination.totalPages-1 || pagination.totalPages === 0}
-                                    >
-                                        Trang cuối
-                                    </button>
-                            </div>
-
-                           <div className="pagination-info">
-                                Hiển thị {products.length} trên {pagination.totalElements || 0} sản phẩm
-=======
-                                    Sau
+                                <button
+                                    className={`button-product outline small ${pagination.currentPage === pagination.totalPages - 1 || pagination.totalPages === 0 ? 'active' : ''}`}
+                                    onClick={() => goToPage(pagination.totalPages - 1)}
+                                    disabled={pagination.currentPage === pagination.totalPages-1 || pagination.totalPages === 0}
+                                >
+                                    Trang cuối
                                 </button>
                             </div>
 
-                           <div className="pagination-info">
-                                Trang {pagination.currentPage + 1} / {pagination.totalPages}
-                                <span className="separator">•</span>
-                                Hiển thị {products.length} trên {pagination.totalElements} sản phẩm
->>>>>>> Stashed changes
+                            <div className="pagination-info">
+                                Hiển thị {products.length} trên {pagination.totalElements || 0} sản phẩm
                             </div>
                         </div>
                     )}

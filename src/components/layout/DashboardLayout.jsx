@@ -94,13 +94,12 @@ function DashboardLayout({ children }) {
                         <div className="avatar">
                             {/* Sử dụng URL cố định từ Cloudinary thay vì dựa vào user.imageUrl */}
                             <img
-                                src="https://res.cloudinary.com/dgwfnyn86/image/upload/v1747655657/1234_tqtwqe.jpg"
+                                src={user.imageUrl}
                                 alt="Avatar"
                                 className="avatar-image"
                                 onError={(e) => {
-                                    // Nếu hình ảnh lỗi, hiển thị fallback
+                                    // If image fails to load, show fallback
                                     e.target.style.display = 'none';
-                                    // Hiển thị phần tử fallback
                                     const fallbackEl = e.target.parentNode.querySelector('.avatar-fallback');
                                     if (fallbackEl) fallbackEl.style.display = 'flex';
                                 }}

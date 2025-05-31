@@ -3,7 +3,17 @@ import api from '../config/Api.js';
 
 const orderService = {
     getSellerOrders: (params) => {
-        return api.get('/seller/orders', { params });
+        // Build query params similar to productService
+        const queryParams = new URLSearchParams();
+
+        if (params.page !== undefined) queryParams.append('page', params.page.toString());
+        if (params.size !== undefined) queryParams.append('size', params.size.toString());
+        if (params.search) queryParams.append('search', params.search);
+        if (params.status) queryParams.append('status', params.status);
+        if (params.fromDate) queryParams.append('startDate', params.fromDate);
+        if (params.toDate) queryParams.append('endDate', params.toDate);
+
+        return api.get(`/seller/orders?${queryParams}`);
     },
 
     getOrderDetail: (orderId) => {

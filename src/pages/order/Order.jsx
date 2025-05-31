@@ -1,5 +1,5 @@
 // src/pages/order/Order.jsx
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Calendar, Download, Eye, Filter, MoreHorizontal, Search, X } from "lucide-react";
 import "../../styles/order/order.css";
 import useOrder from "../../hooks/useOrder";
@@ -24,6 +24,8 @@ function Order() {
         fetchOrderDetail,
         updateOrderStatus,
         pagination,
+        filters,
+        updateFilters,
         loading,
         error,
         goToPage,
@@ -38,11 +40,7 @@ function Order() {
             try {
                 await fetchOrders({
                     page: currentPage,
-                    size: pageSize,
-                    status: selectedStatus || undefined,
-                    search: searchQuery || undefined,
-                    fromDate: fromDate || undefined,
-                    toDate: toDate || undefined
+                    size: pageSize
                 });
             } catch (err) {
                 console.error("Lỗi khi lấy danh sách đơn hàng:", err);
@@ -50,7 +48,22 @@ function Order() {
         };
 
         fetchData();
-    }, [fetchOrders, currentPage, pageSize, selectedStatus, searchQuery, fromDate, toDate]);
+    }, [fetchOrders, currentPage, pageSize]);
+
+    const searchTimeoutRef = useRef(null);
+    // Update filter change handlers to use updateFilters
+    const handleSearchChange = (value) => {
+        setSearchQuery(value);
+        // Debounce search
+        // Clear previous timeout
+        if (searchTimeoutRef.current) {
+            clearTimeout(searchTimeoutRef.current);
+        }
+        // Set new timeout
+        searchTimeoutRef.current = setTimeout(() => {
+            updateFilters({ search: value });
+        }, 500);
+    };
 
     // Hiển thị chi tiết đơn hàng
     const handleViewOrderDetail = async (orderId) => {
@@ -78,26 +91,22 @@ function Order() {
     };
 
     // Xử lý thay đổi trạng thái đơn hàng
-    const handleStatusChange = async (orderId, newStatus) => {
-        try {
-            await updateOrderStatus(orderId, newStatus);
+    const handleStatusChange = (status) => {
+        setSelectedStatus(status);
+        updateFilters({ status });
+    };
 
-            // Nếu đang xem chi tiết đơn hàng này, cập nhật lại thông tin
-            if (viewOrderDetails && viewOrderDetails.id === orderId) {
-                const updatedOrder = await fetchOrderDetail(orderId);
-                setViewOrderDetails(updatedOrder);
-            }
-
-            setDropdownOpen(null);
-        } catch (err) {
-            console.error("Lỗi khi cập nhật trạng thái đơn hàng:", err);
-        }
+    const handleDateChange = (fromDate, toDate) => {
+        setFromDate(fromDate);
+        setToDate(toDate);
+        updateFilters({ fromDate, toDate });
     };
 
     // Clear date filters
     const clearDateFilters = () => {
         setFromDate("");
         setToDate("");
+        updateFilters({ fromDate: "", toDate: "" });
     };
 
     // Lấy class CSS cho badge trạng thái đơn hàng
@@ -187,7 +196,7 @@ function Order() {
                                 className="search-input"
                                 placeholder="Tìm kiếm theo mã đơn hàng, khách hàng..."
                                 value={searchQuery}
-                                onChange={(e) => setSearchQuery(e.target.value)}
+                                onChange={(e) => handleSearchChange(e.target.value)}
                             />
                         </div>
                         <div className="filter-actions">
@@ -197,7 +206,7 @@ function Order() {
                                     id="status-select"
                                     className="filter-select"
                                     value={selectedStatus}
-                                    onChange={(e) => setSelectedStatus(e.target.value)}
+                                    onChange={(e) => handleStatusChange(e.target.value)}
                                 >
                                     <option value="">Tất cả trạng thái</option>
                                     <option value="DELIVERED">Đã giao hàng</option>
@@ -207,9 +216,12 @@ function Order() {
                                     <option value="CANCELLED">Đã hủy</option>
                                 </select>
                                 {selectedStatus && (
-                                    <button 
-                                        className="button ghost small clear-filter" 
-                                        onClick={() => setSelectedStatus("")}
+                                    <button
+                                        className="button ghost small clear-filter"
+                                        onClick={() => {
+                                            setSelectedStatus("");
+                                            handleStatusChange("");
+                                        }}
                                         title="Xóa bộ lọc"
                                     >
                                         <X className="icon-small" />
@@ -225,12 +237,12 @@ function Order() {
                                         type="date"
                                         className="date-input"
                                         value={fromDate}
-                                        onChange={(e) => setFromDate(e.target.value)}
+                                        onChange={(e) => handleDateChange(e.target.value, toDate)}
                                         max={toDate || undefined}
                                     />
                                 </div>
-                                
-                                
+
+
                                 <div className="date-input-group">
                                     <label htmlFor="to-date" className="date-label"> đến </label>
                                     <input
@@ -238,14 +250,14 @@ function Order() {
                                         type="date"
                                         className="date-input"
                                         value={toDate}
-                                        onChange={(e) => setToDate(e.target.value)}
+                                        onChange={(e) => handleDateChange(fromDate, e.target.value)}
                                         min={fromDate || undefined}
                                     />
                                 </div>
-                                
+
                                 {(fromDate || toDate) && (
-                                    <button 
-                                        className="button ghost small clear-date-filter" 
+                                    <button
+                                        className="button ghost small clear-date-filter"
                                         onClick={clearDateFilters}
                                         title="Xóa bộ lọc ngày"
                                     >
@@ -313,7 +325,16 @@ function Order() {
                                                         {order.orderStatus !== "PENDING" && (
                                                             <button
                                                                 className="dropdown-item"
-                                                                onClick={() => handleStatusChange(order.id, "PENDING")}
+                                                                onClick={async () => {
+                                                                    try {
+                                                                        await updateOrderStatus(order.id, "PENDING");
+                                                                        setDropdownOpen(null);
+                                                                        // Refresh data after status update
+                                                                        fetchOrders();
+                                                                    } catch (err) {
+                                                                        console.error("Lỗi cập nhật trạng thái:", err);
+                                                                    }
+                                                                }}
                                                             >
                                                                 Chờ xác nhận
                                                             </button>
@@ -408,7 +429,7 @@ function Order() {
                             </button>
                         </div>
 
-                       <div className="pagination-info">
+                        <div className="pagination-info">
                             Hiển thị {orders.length} trên {pagination.totalElements || 0} đơn hàng
                         </div>
                     </div>

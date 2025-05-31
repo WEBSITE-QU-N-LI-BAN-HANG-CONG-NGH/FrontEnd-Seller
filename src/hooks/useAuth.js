@@ -47,31 +47,6 @@ const useAuth = () => {
                 // Kiểm tra nếu JWT có quyền SELLER
                 const isSeller = checkSellerFromToken();
 
-                if (isSeller) {
-                    console.log('Xác thực vai trò qua JWT: SELLER');
-
-                    // Tìm thông tin người dùng từ JWT để tạo object user
-                    try {
-                        const parts = token.split('.');
-                        const payload = JSON.parse(atob(parts[1]));
-
-                        // Tạo dữ liệu người dùng tối thiểu từ JWT payload
-                        const userData = {
-                            id: payload.id,
-                            email: payload.sub,
-                            firstName: payload.firstName || "",
-                            lastName: payload.lastName || "",
-                            role: "SELLER"
-                        };
-
-                        setUser(userData);
-                        setLoading(false);
-                        return;
-                    } catch (err) {
-                        console.warn('Không thể trích xuất thông tin người dùng từ JWT, sẽ gọi API');
-                    }
-                }
-
                 // Nếu không lấy được từ JWT, gọi API profile
                 try {
                     const response = await fetchWithRetry(api.get, '/users/profile');
@@ -89,7 +64,8 @@ const useAuth = () => {
                             email: payload.sub,
                             firstName: payload.firstName || "",
                             lastName: payload.lastName || "",
-                            role: "SELLER"
+                            role: "SELLER",
+                            imageUrl: payload.imageUrl || "",
                         };
 
                         setUser(userData);
