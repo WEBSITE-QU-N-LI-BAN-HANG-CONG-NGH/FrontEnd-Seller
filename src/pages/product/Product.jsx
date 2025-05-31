@@ -297,7 +297,7 @@ function Product() {
                                             className="button primary small"
                                             onClick={handleApplyFilters}
                                         >
-                                            Áp dụng
+                                            Lọc
                                         </button>
                                     </div>
                                 </div>
@@ -368,33 +368,18 @@ function Product() {
                                         </td>
                                         <td className="actions-cell">
                                             <div className="dropdown">
-                                                <button
-                                                    className="button-config icon-only ghost"
-                                                    onClick={(e) => toggleDropdown(e, product.id)}
-                                                >
-                                                    <MoreHorizontal className="icon-small" />
-                                                    <span className="sr-only">Mở menu</span>
-                                                </button>
-                                                {dropdownOpen === product.id && (
-                                                    <div className="dropdown-menu">
-                                                        <div className="dropdown-header">Thao tác</div>
-                                                        <div className="dropdown-divider"></div>
                                                         <button
                                                             className="dropdown-item"
                                                             onClick={(e) => handleEditClick(e, product.id)}
                                                         >
                                                             <Edit className="icon-small" />
-                                                            Chỉnh sửa
                                                         </button>
                                                         <button
                                                             className="dropdown-item danger"
                                                             onClick={(e) => handleDeleteClick(e, product)}
                                                         >
                                                             <Trash2 className="icon-small" />
-                                                            Xóa
                                                         </button>
-                                                    </div>
-                                                )}
                                             </div>
                                         </td>
                                     </tr>

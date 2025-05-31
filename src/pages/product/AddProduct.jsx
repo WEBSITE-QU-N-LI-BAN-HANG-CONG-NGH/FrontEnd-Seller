@@ -25,13 +25,19 @@ function AddProduct() {
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [activeTab, setActiveTab] = useState("basic");
     const [productImages, setProductImages] = useState([]);
-    const [specifications, setSpecifications] = useState([
-        { key: "CPU", value: "" },
-        { key: "RAM", value: "" },
-        { key: "Ổ cứng", value: "" },
-        { key: "Màn hình", value: "" },
-        { key: "Card đồ họa", value: "" },
-    ]);
+    // Fixed specifications based on backend structure
+    const [specifications, setSpecifications] = useState({
+        weight: "",
+        dimension: "",
+        batteryType: "",
+        batteryCapacity: "",
+        ramCapacity: "",
+        romCapacity: "",
+        screenSize: "",
+        detailedReview: "",
+        powerfulPerformance: "",
+        connectionPort: ""
+    });
     const [formErrors, setFormErrors] = useState({});
     const [productData, setProductData] = useState({
         title: "",
@@ -69,23 +75,12 @@ function AddProduct() {
         setProductData({ ...productData, sizes: newSizes });
     };
 
-    // Xử lý thêm thông số kỹ thuật
-    const handleAddSpecification = () => {
-        setSpecifications([...specifications, { key: "", value: "" }]);
-    };
-
-    // Xử lý xóa thông số kỹ thuật
-    const handleRemoveSpecification = (index) => {
-        const newSpecs = [...specifications];
-        newSpecs.splice(index, 1);
-        setSpecifications(newSpecs);
-    };
-
     // Xử lý thay đổi thông số kỹ thuật
-    const handleSpecChange = (index, field, value) => {
-        const newSpecs = [...specifications];
-        newSpecs[index][field] = value;
-        setSpecifications(newSpecs);
+    const handleSpecChange = (field, value) => {
+        setSpecifications({
+            ...specifications,
+            [field]: value
+        });
     };
 
     // Xử lý thay đổi input form
@@ -189,14 +184,8 @@ function AddProduct() {
                 price: parseInt(productData.price),
                 quantity: parseInt(productData.quantity),
                 discountPersent: parseInt(productData.discountPersent || 0),
-                // Chuyển thông số kỹ thuật thành một chuỗi JSON trong description
-                description: productData.description + "\n\n" + JSON.stringify(
-                    specifications.filter(spec => spec.key && spec.value)
-                        .reduce((obj, item) => {
-                            obj[item.key] = item.value;
-                            return obj;
-                        }, {})
-                ),
+                // Include specifications in the main data object
+                ...specifications,
                 // Định dạng sizes cho API
                 sizes: productData.sizes.map(size => ({
                     name: size.name,
@@ -476,60 +465,6 @@ function AddProduct() {
                                             />
                                         </div>
                                     </div>
-
-                                    <div className="separator"></div>
-
-                                    <div className="form-section">
-                                        <h3 className="section-title">Kích thước sản phẩm</h3>
-                                        <div className="sizes-table">
-                                            <table>
-                                                <thead>
-                                                <tr>
-                                                    <th>Kích thước</th>
-                                                    <th>Số lượng</th>
-                                                    <th>Thao tác</th>
-                                                </tr>
-                                                </thead>
-                                                <tbody>
-                                                {productData.sizes.map((size, index) => (
-                                                    <tr key={index}>
-                                                        <td>
-                                                            <input
-                                                                className="form-input"
-                                                                placeholder="VD: S, M, L, XL, 256GB..."
-                                                                value={size.name}
-                                                                onChange={(e) => handleSizeChange(index, "name", e.target.value)}
-                                                            />
-                                                        </td>
-                                                        <td>
-                                                            <input
-                                                                type="number"
-                                                                className="form-input"
-                                                                placeholder="Số lượng"
-                                                                min="0"
-                                                                value={size.quantity}
-                                                                onChange={(e) => handleSizeChange(index, "quantity", e.target.value)}
-                                                            />
-                                                        </td>
-                                                        <td>
-                                                            <button
-                                                                type="button"
-                                                                className="button icon-only ghost"
-                                                                onClick={() => handleRemoveSize(index)}
-                                                            >
-                                                                <Trash2 className="icon-small danger" />
-                                                            </button>
-                                                        </td>
-                                                    </tr>
-                                                ))}
-                                                </tbody>
-                                            </table>
-                                        </div>
-                                        <button type="button" className="button outline" onClick={handleAddSize}>
-                                            <Plus className="icon-small" />
-                                            Thêm kích thước
-                                        </button>
-                                    </div>
                                 </div>
                             </div>
                         )}
@@ -540,59 +475,130 @@ function AddProduct() {
                                     <h2 className="card-title">Thông số kỹ thuật</h2>
                                 </div>
                                 <div className="card-content">
-                                    <div className="specs-table">
-                                        <table>
-                                            <thead>
-                                            <tr>
-                                                <th className="spec-name-col">Thông số</th>
-                                                <th>Giá trị</th>
-                                                <th className="action-col">Thao tác</th>
-                                            </tr>
-                                            </thead>
-                                            <tbody>
-                                            {specifications.map((spec, index) => (
-                                                <tr key={index}>
-                                                    <td>
-                                                        <input
-                                                            className="form-input"
-                                                            value={spec.key}
-                                                            onChange={(e) => handleSpecChange(index, "key", e.target.value)}
-                                                            placeholder="VD: CPU, RAM, Màn hình..."
-                                                        />
-                                                    </td>
-                                                    <td>
-                                                        <input
-                                                            className="form-input"
-                                                            value={spec.value}
-                                                            onChange={(e) => handleSpecChange(index, "value", e.target.value)}
-                                                            placeholder="VD: Intel Core i7, 16GB, 15.6 inch..."
-                                                        />
-                                                    </td>
-                                                    <td>
-                                                        <button
-                                                            type="button"
-                                                            className="button icon-only ghost"
-                                                            onClick={() => handleRemoveSpecification(index)}
-                                                        >
-                                                            <Trash2 className="icon-small danger" />
-                                                        </button>
-                                                    </td>
-                                                </tr>
-                                            ))}
-                                            </tbody>
-                                        </table>
+                                    <div className="form-row">
+                                        <div className="form-group">
+                                            <label htmlFor="weight" className="form-label">Trọng lượng</label>
+                                            <input
+                                                id="weight"
+                                                className="form-input"
+                                                value={specifications.weight}
+                                                onChange={(e) => handleSpecChange("weight", e.target.value)}
+                                                placeholder="VD: 1.5kg, 200g..."
+                                            />
+                                        </div>
+
+                                        <div className="form-group">
+                                            <label htmlFor="dimension" className="form-label">Kích thước</label>
+                                            <input
+                                                id="dimension"
+                                                className="form-input"
+                                                value={specifications.dimension}
+                                                onChange={(e) => handleSpecChange("dimension", e.target.value)}
+                                                placeholder="VD: 356 x 251 x 16.8 mm"
+                                            />
+                                        </div>
                                     </div>
 
-                                    <button type="button" className="button outline" onClick={handleAddSpecification}>
-                                        <Plus className="icon-small" />
-                                        Thêm thông số
-                                    </button>
+                                    <div className="form-row">
+                                        <div className="form-group">
+                                            <label htmlFor="batteryType" className="form-label">Loại pin</label>
+                                            <input
+                                                id="batteryType"
+                                                className="form-input"
+                                                value={specifications.batteryType}
+                                                onChange={(e) => handleSpecChange("batteryType", e.target.value)}
+                                                placeholder="VD: Li-Polymer, Li-Ion..."
+                                            />
+                                        </div>
+
+                                        <div className="form-group">
+                                            <label htmlFor="batteryCapacity" className="form-label">Dung lượng pin</label>
+                                            <input
+                                                id="batteryCapacity"
+                                                className="form-input"
+                                                value={specifications.batteryCapacity}
+                                                onChange={(e) => handleSpecChange("batteryCapacity", e.target.value)}
+                                                placeholder="VD: 5000mAh, 58.2Wh..."
+                                            />
+                                        </div>
+                                    </div>
+
+                                    <div className="form-row">
+                                        <div className="form-group">
+                                            <label htmlFor="ramCapacity" className="form-label">Dung lượng RAM</label>
+                                            <input
+                                                id="ramCapacity"
+                                                className="form-input"
+                                                value={specifications.ramCapacity}
+                                                onChange={(e) => handleSpecChange("ramCapacity", e.target.value)}
+                                                placeholder="VD: 8GB, 16GB DDR4..."
+                                            />
+                                        </div>
+
+                                        <div className="form-group">
+                                            <label htmlFor="romCapacity" className="form-label">Dung lượng bộ nhớ</label>
+                                            <input
+                                                id="romCapacity"
+                                                className="form-input"
+                                                value={specifications.romCapacity}
+                                                onChange={(e) => handleSpecChange("romCapacity", e.target.value)}
+                                                placeholder="VD: 256GB SSD, 512GB..."
+                                            />
+                                        </div>
+                                    </div>
+
+                                    <div className="form-group">
+                                        <label htmlFor="screenSize" className="form-label">Kích thước màn hình</label>
+                                        <input
+                                            id="screenSize"
+                                            className="form-input"
+                                            value={specifications.screenSize}
+                                            onChange={(e) => handleSpecChange("screenSize", e.target.value)}
+                                            placeholder="VD: 15.6 inch Full HD, 6.1 inch OLED..."
+                                        />
+                                    </div>
+
+                                    <div className="form-group">
+                                        <label htmlFor="connectionPort" className="form-label">Cổng kết nối</label>
+                                        <input
+                                            id="connectionPort"
+                                            className="form-input"
+                                            value={specifications.connectionPort}
+                                            onChange={(e) => handleSpecChange("connectionPort", e.target.value)}
+                                            placeholder="VD: USB-C, USB 3.0, HDMI, 3.5mm..."
+                                        />
+                                    </div>
+
+                                    <div className="separator"></div>
+
+                                    <div className="form-group">
+                                        <label htmlFor="detailedReview" className="form-label">Đánh giá chi tiết</label>
+                                        <textarea
+                                            id="detailedReview"
+                                            className="form-textarea"
+                                            value={specifications.detailedReview}
+                                            onChange={(e) => handleSpecChange("detailedReview", e.target.value)}
+                                            placeholder="Nhập đánh giá chi tiết về sản phẩm..."
+                                            rows="4"
+                                        ></textarea>
+                                    </div>
+
+                                    <div className="form-group">
+                                        <label htmlFor="powerfulPerformance" className="form-label">Hiệu năng mạnh mẽ</label>
+                                        <textarea
+                                            id="powerfulPerformance"
+                                            className="form-textarea"
+                                            value={specifications.powerfulPerformance}
+                                            onChange={(e) => handleSpecChange("powerfulPerformance", e.target.value)}
+                                            placeholder="Mô tả về hiệu năng và sức mạnh của sản phẩm..."
+                                            rows="4"
+                                        ></textarea>
+                                    </div>
 
                                     <div className="alert info">
                                         <Info className="icon-small" />
                                         <p className="alert-description">
-                                            Thêm các thông số kỹ thuật chi tiết giúp khách hàng hiểu rõ hơn về sản phẩm và tăng khả năng mua
-                                            hàng.
+                                            Điền đầy đủ thông số kỹ thuật giúp khách hàng hiểu rõ hơn về sản phẩm và tăng khả năng mua hàng.
                                         </p>
                                     </div>
                                 </div>

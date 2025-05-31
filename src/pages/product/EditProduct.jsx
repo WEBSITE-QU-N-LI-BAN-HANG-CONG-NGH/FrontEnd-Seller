@@ -1,4 +1,3 @@
-// src/pages/product/EditProduct.jsx
 import { useState, useEffect } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import {
@@ -36,13 +35,21 @@ function EditProduct() {
     const [activeTab, setActiveTab] = useState("basic");
     const [productImages, setProductImages] = useState([]);
     const [existingImages, setExistingImages] = useState([]); // Track existing images
-    const [specifications, setSpecifications] = useState([
-        { key: "CPU", value: "" },
-        { key: "RAM", value: "" },
-        { key: "Ổ cứng", value: "" },
-        { key: "Màn hình", value: "" },
-        { key: "Card đồ họa", value: "" },
-    ]);
+    
+    // Fixed specifications based on backend columns
+    const [specifications, setSpecifications] = useState({
+        weight: "",
+        dimension: "",
+        batteryType: "",
+        batteryCapacity: "",
+        ramCapacity: "",
+        romCapacity: "",
+        screenSize: "",
+        detailedReview: "",
+        powerfulPerformance: "",
+        connectionPort: ""
+    });
+
     const [formErrors, setFormErrors] = useState({});
     const [productData, setProductData] = useState({
         title: "",
@@ -75,36 +82,13 @@ function EditProduct() {
                     throw new Error("Product not found");
                 }
 
-                // Parse specifications from description if they exist
-                let parsedSpecs = [
-                    { key: "CPU", value: "" },
-                    { key: "RAM", value: "" },
-                    { key: "Ổ cứng", value: "" },
-                    { key: "Màn hình", value: "" },
-                    { key: "Card đồ họa", value: "" },
-                ];
-
-                let cleanDescription = product.description || "";
-                
-                // Try to extract JSON specifications from description
-                const jsonMatch = product.description?.match(/\n\n(\{.*\})$/s);
-                if (jsonMatch) {
-                    try {
-                        const specs = JSON.parse(jsonMatch[1]);
-                        parsedSpecs = Object.entries(specs).map(([key, value]) => ({ key, value }));
-                        cleanDescription = product.description.replace(jsonMatch[0], "");
-                    } catch (e) {
-                        console.warn("Could not parse specifications from description");
-                    }
-                }
-
                 // Set product data
                 setProductData({
                     title: product.title || "",
                     brand: product.brand || "",
                     price: product.price?.toString() || "",
                     quantity: product.quantity?.toString() || "",
-                    description: cleanDescription,
+                    description: product.description || "",
                     topLevelCategory: product.topLevelCategory || "",
                     secondLevelCategory: product.secondLevelCategory || "",
                     discountPersent: product.discountPersent || 0,
@@ -114,7 +98,19 @@ function EditProduct() {
                     active: product.active !== false // Default to true if not specified
                 });
 
-                setSpecifications(parsedSpecs);
+                // Set specifications from product data
+                setSpecifications({
+                    weight: product.weight || "",
+                    dimension: product.dimension || "",
+                    batteryType: product.batteryType || "",
+                    batteryCapacity: product.batteryCapacity || "",
+                    ramCapacity: product.ramCapacity || "",
+                    romCapacity: product.romCapacity || "",
+                    screenSize: product.screenSize || "",
+                    detailedReview: product.detailedReview || "",
+                    powerfulPerformance: product.powerfulPerformance || "",
+                    connectionPort: product.connectionPort || ""
+                });
 
                 // Set existing images
                 if (product.imageUrls && product.imageUrls.length > 0) {
@@ -161,23 +157,12 @@ function EditProduct() {
         setProductData({ ...productData, sizes: newSizes });
     };
 
-    // Xử lý thêm thông số kỹ thuật
-    const handleAddSpecification = () => {
-        setSpecifications([...specifications, { key: "", value: "" }]);
-    };
-
-    // Xử lý xóa thông số kỹ thuật
-    const handleRemoveSpecification = (index) => {
-        const newSpecs = [...specifications];
-        newSpecs.splice(index, 1);
-        setSpecifications(newSpecs);
-    };
-
     // Xử lý thay đổi thông số kỹ thuật
-    const handleSpecChange = (index, field, value) => {
-        const newSpecs = [...specifications];
-        newSpecs[index][field] = value;
-        setSpecifications(newSpecs);
+    const handleSpecificationChange = (field, value) => {
+        setSpecifications({
+            ...specifications,
+            [field]: value
+        });
     };
 
     // Xử lý thay đổi input form
@@ -287,20 +272,13 @@ function EditProduct() {
         setIsSubmitting(true);
 
         try {
-            // Chuẩn bị dữ liệu sản phẩm
+            // Chuẩn bị dữ liệu sản phẩm với specifications
             const formattedData = {
                 ...productData,
+                ...specifications, // Include all specification fields
                 price: parseInt(productData.price),
                 quantity: parseInt(productData.quantity),
                 discountPersent: parseInt(productData.discountPersent || 0),
-                // Chuyển thông số kỹ thuật thành một chuỗi JSON trong description
-                description: productData.description + "\n\n" + JSON.stringify(
-                    specifications.filter(spec => spec.key && spec.value)
-                        .reduce((obj, item) => {
-                            obj[item.key] = item.value;
-                            return obj;
-                        }, {})
-                ),
                 // Định dạng sizes cho API
                 sizes: productData.sizes.map(size => ({
                     name: size.name,
@@ -578,60 +556,6 @@ function EditProduct() {
                                             />
                                         </div>
                                     </div>
-
-                                    <div className="separator"></div>
-
-                                    <div className="form-section">
-                                        <h3 className="section-title">Kích thước sản phẩm</h3>
-                                        <div className="sizes-table">
-                                            <table>
-                                                <thead>
-                                                <tr>
-                                                    <th>Kích thước</th>
-                                                    <th>Số lượng</th>
-                                                    <th>Thao tác</th>
-                                                </tr>
-                                                </thead>
-                                                <tbody>
-                                                {productData.sizes.map((size, index) => (
-                                                    <tr key={index}>
-                                                        <td>
-                                                            <input
-                                                                className="form-input"
-                                                                placeholder="VD: S, M, L, XL, 256GB..."
-                                                                value={size.name}
-                                                                onChange={(e) => handleSizeChange(index, "name", e.target.value)}
-                                                            />
-                                                        </td>
-                                                        <td>
-                                                            <input
-                                                                type="number"
-                                                                className="form-input"
-                                                                placeholder="Số lượng"
-                                                                min="0"
-                                                                value={size.quantity}
-                                                                onChange={(e) => handleSizeChange(index, "quantity", e.target.value)}
-                                                            />
-                                                        </td>
-                                                        <td>
-                                                            <button
-                                                                type="button"
-                                                                className="button icon-only ghost"
-                                                                onClick={() => handleRemoveSize(index)}
-                                                            >
-                                                                <Trash2 className="icon-small danger" />
-                                                            </button>
-                                                        </td>
-                                                    </tr>
-                                                ))}
-                                                </tbody>
-                                            </table>
-                                        </div>
-                                        <button type="button" className="button outline" onClick={handleAddSize}>
-                                            <Plus className="icon-small" />
-                                            Thêm kích thước
-                                        </button>
-                                    </div>
                                 </div>
                             </div>
                         )}
@@ -642,59 +566,126 @@ function EditProduct() {
                                     <h2 className="card-title">Thông số kỹ thuật</h2>
                                 </div>
                                 <div className="card-content">
-                                    <div className="specs-table">
-                                        <table>
-                                            <thead>
-                                            <tr>
-                                                <th className="spec-name-col">Thông số</th>
-                                                <th>Giá trị</th>
-                                                <th className="action-col">Thao tác</th>
-                                            </tr>
-                                            </thead>
-                                            <tbody>
-                                            {specifications.map((spec, index) => (
-                                                <tr key={index}>
-                                                    <td>
-                                                        <input
-                                                            className="form-input"
-                                                            value={spec.key}
-                                                            onChange={(e) => handleSpecChange(index, "key", e.target.value)}
-                                                            placeholder="VD: CPU, RAM, Màn hình..."
-                                                        />
-                                                    </td>
-                                                    <td>
-                                                        <input
-                                                            className="form-input"
-                                                            value={spec.value}
-                                                            onChange={(e) => handleSpecChange(index, "value", e.target.value)}
-                                                            placeholder="VD: Intel Core i7, 16GB, 15.6 inch..."
-                                                        />
-                                                    </td>
-                                                    <td>
-                                                        <button
-                                                            type="button"
-                                                            className="button icon-only ghost"
-                                                            onClick={() => handleRemoveSpecification(index)}
-                                                        >
-                                                            <Trash2 className="icon-small danger" />
-                                                        </button>
-                                                    </td>
-                                                </tr>
-                                            ))}
-                                            </tbody>
-                                        </table>
+                                    <div className="form-row">
+                                        <div className="form-group">
+                                            <label htmlFor="weight" className="form-label">Trọng lượng</label>
+                                            <input
+                                                id="weight"
+                                                className="form-input"
+                                                placeholder="VD: 1.5kg"
+                                                value={specifications.weight}
+                                                onChange={(e) => handleSpecificationChange("weight", e.target.value)}
+                                            />
+                                        </div>
+
+                                        <div className="form-group">
+                                            <label htmlFor="dimension" className="form-label">Kích thước</label>
+                                            <input
+                                                id="dimension"
+                                                className="form-input"
+                                                placeholder="VD: 35.8 x 24.7 x 1.9 cm"
+                                                value={specifications.dimension}
+                                                onChange={(e) => handleSpecificationChange("dimension", e.target.value)}
+                                            />
+                                        </div>
                                     </div>
 
-                                    <button type="button" className="button outline" onClick={handleAddSpecification}>
-                                        <Plus className="icon-small" />
-                                        Thêm thông số
-                                    </button>
+                                    <div className="form-row">
+                                        <div className="form-group">
+                                            <label htmlFor="batteryType" className="form-label">Loại pin</label>
+                                            <input
+                                                id="batteryType"
+                                                className="form-input"
+                                                placeholder="VD: Li-Ion"
+                                                value={specifications.batteryType}
+                                                onChange={(e) => handleSpecificationChange("batteryType", e.target.value)}
+                                            />
+                                        </div>
+
+                                        <div className="form-group">
+                                            <label htmlFor="batteryCapacity" className="form-label">Dung lượng pin</label>
+                                            <input
+                                                id="batteryCapacity"
+                                                className="form-input"
+                                                placeholder="VD: 4500mAh"
+                                                value={specifications.batteryCapacity}
+                                                onChange={(e) => handleSpecificationChange("batteryCapacity", e.target.value)}
+                                            />
+                                        </div>
+                                    </div>
+
+                                    <div className="form-row">
+                                        <div className="form-group">
+                                            <label htmlFor="ramCapacity" className="form-label">Dung lượng RAM</label>
+                                            <input
+                                                id="ramCapacity"
+                                                className="form-input"
+                                                placeholder="VD: 8GB"
+                                                value={specifications.ramCapacity}
+                                                onChange={(e) => handleSpecificationChange("ramCapacity", e.target.value)}
+                                            />
+                                        </div>
+
+                                        <div className="form-group">
+                                            <label htmlFor="romCapacity" className="form-label">Dung lượng ROM</label>
+                                            <input
+                                                id="romCapacity"
+                                                className="form-input"
+                                                placeholder="VD: 256GB"
+                                                value={specifications.romCapacity}
+                                                onChange={(e) => handleSpecificationChange("romCapacity", e.target.value)}
+                                            />
+                                        </div>
+                                    </div>
+
+                                    <div className="form-group">
+                                        <label htmlFor="screenSize" className="form-label">Kích thước màn hình</label>
+                                        <input
+                                            id="screenSize"
+                                            className="form-input"
+                                            placeholder="VD: 15.6 inch Full HD"
+                                            value={specifications.screenSize}
+                                            onChange={(e) => handleSpecificationChange("screenSize", e.target.value)}
+                                        />
+                                    </div>
+
+                                    <div className="form-group">
+                                        <label htmlFor="connectionPort" className="form-label">Cổng kết nối</label>
+                                        <input
+                                            id="connectionPort"
+                                            className="form-input"
+                                            placeholder="VD: USB-C, USB 3.0, HDMI"
+                                            value={specifications.connectionPort}
+                                            onChange={(e) => handleSpecificationChange("connectionPort", e.target.value)}
+                                        />
+                                    </div>
+
+                                    <div className="form-group">
+                                        <label htmlFor="powerfulPerformance" className="form-label">Hiệu năng mạnh mẽ</label>
+                                        <textarea
+                                            id="powerfulPerformance"
+                                            className="form-textarea"
+                                            placeholder="Mô tả về hiệu năng của sản phẩm..."
+                                            value={specifications.powerfulPerformance}
+                                            onChange={(e) => handleSpecificationChange("powerfulPerformance", e.target.value)}
+                                        />
+                                    </div>
+
+                                    <div className="form-group">
+                                        <label htmlFor="detailedReview" className="form-label">Đánh giá chi tiết</label>
+                                        <textarea
+                                            id="detailedReview"
+                                            className="form-textarea"
+                                            placeholder="Đánh giá chi tiết về sản phẩm..."
+                                            value={specifications.detailedReview}
+                                            onChange={(e) => handleSpecificationChange("detailedReview", e.target.value)}
+                                        />
+                                    </div>
 
                                     <div className="alert info">
                                         <Info className="icon-small" />
                                         <p className="alert-description">
-                                            Thêm các thông số kỹ thuật chi tiết giúp khách hàng hiểu rõ hơn về sản phẩm và tăng khả năng mua
-                                            hàng.
+                                            Điền đầy đủ thông số kỹ thuật giúp khách hàng hiểu rõ hơn về sản phẩm và tăng khả năng mua hàng.
                                         </p>
                                     </div>
                                 </div>

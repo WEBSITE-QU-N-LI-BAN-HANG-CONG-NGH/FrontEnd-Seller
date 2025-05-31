@@ -6,6 +6,7 @@ import useOrder from "../../hooks/useOrder";
 import { formatCurrency, formatDate } from "../../utils/format.js";
 import LoadingSpinner from "../../components/common/LoadingSpinner";
 import ErrorAlert from "../../components/common/ErrorAlert";
+import DetailOrder from "./DetailOrder.jsx";
 
 function Order() {
     const [searchQuery, setSearchQuery] = useState("");
@@ -13,7 +14,6 @@ function Order() {
     const [fromDate, setFromDate] = useState("");
     const [toDate, setToDate] = useState("");
     const [viewOrderDetails, setViewOrderDetails] = useState(null);
-    const [dropdownOpen, setDropdownOpen] = useState(null);
     const [currentPage, setCurrentPage] = useState(0);
     const [pageSize] = useState(10);
     const [pageInput, setPageInput] = useState("");
@@ -80,20 +80,24 @@ function Order() {
         setViewOrderDetails(null);
     };
 
-    // Mở/đóng dropdown
-    const toggleDropdown = (e, orderId) => {
-        e.stopPropagation();
-        if (dropdownOpen === orderId) {
-            setDropdownOpen(null);
-        } else {
-            setDropdownOpen(orderId);
-        }
-    };
-
     // Xử lý thay đổi trạng thái đơn hàng
     const handleStatusChange = (status) => {
         setSelectedStatus(status);
         updateFilters({ status });
+    };
+
+    // Xử lý cập nhật trạng thái đơn hàng trực tiếp từ select
+    const handleUpdateOrderStatus = async (orderId, newStatus) => {
+        try {
+            await updateOrderStatus(orderId, newStatus);
+            // Refresh data after status update
+            await fetchOrders({
+                page: currentPage,
+                size: pageSize
+            });
+        } catch (err) {
+            console.error("Lỗi cập nhật trạng thái:", err);
+        }
     };
 
     const handleDateChange = (fromDate, toDate) => {
@@ -242,7 +246,6 @@ function Order() {
                                     />
                                 </div>
 
-
                                 <div className="date-input-group">
                                     <label htmlFor="to-date" className="date-label"> đến </label>
                                     <input
@@ -295,85 +298,26 @@ function Order() {
                                         <td>{formatDate(order.orderDate)}</td>
                                         <td className="price-cell">{formatCurrency(order.totalDiscountedPrice)}</td>
                                         <td className="status-cell">
-                                            <span className={`status-badge ${getStatusClass(order.orderStatus)}`}>
-                                                {translateStatus(order.orderStatus)}
-                                            </span>
+                                            <select
+                                                className={`status-select ${getStatusClass(order.orderStatus)}`}
+                                                value={order.orderStatus}
+                                                onChange={(e) => handleUpdateOrderStatus(order.id, e.target.value)}
+                                            >
+                                                <option value="PENDING">Chờ xác nhận</option>
+                                                <option value="CONFIRMED">Đã xác nhận</option>
+                                                <option value="SHIPPED">Đang giao hàng</option>
+                                                <option value="DELIVERED">Đã giao hàng</option>
+                                                <option value="CANCELLED">Đã hủy</option>
+                                            </select>
                                         </td>
                                         <td className="actions-cell">
-                                            <div className="dropdown">
-                                                <button
-                                                    className="button icon-only ghost"
-                                                    onClick={(e) => toggleDropdown(e, order.id)}
-                                                >
-                                                    <MoreHorizontal className="icon-small" />
-                                                    <span className="sr-only">Mở menu</span>
-                                                </button>
-                                                {dropdownOpen === order.id && (
-                                                    <div className="dropdown-menu">
-                                                        <div className="dropdown-header">Thao tác</div>
-                                                        <div className="dropdown-divider"></div>
-                                                        <button
-                                                            className="dropdown-item"
-                                                            onClick={() => handleViewOrderDetail(order.id)}
-                                                        >
-                                                            <Eye className="icon-small" />
-                                                            Xem chi tiết
-                                                        </button>
-                                                        <div className="dropdown-divider"></div>
-                                                        <div className="dropdown-header">Thay đổi trạng thái</div>
-                                                        <div className="dropdown-divider"></div>
-                                                        {order.orderStatus !== "PENDING" && (
-                                                            <button
-                                                                className="dropdown-item"
-                                                                onClick={async () => {
-                                                                    try {
-                                                                        await updateOrderStatus(order.id, "PENDING");
-                                                                        setDropdownOpen(null);
-                                                                        // Refresh data after status update
-                                                                        fetchOrders();
-                                                                    } catch (err) {
-                                                                        console.error("Lỗi cập nhật trạng thái:", err);
-                                                                    }
-                                                                }}
-                                                            >
-                                                                Chờ xác nhận
-                                                            </button>
-                                                        )}
-                                                        {order.orderStatus !== "CONFIRMED" && (
-                                                            <button
-                                                                className="dropdown-item"
-                                                                onClick={() => handleStatusChange(order.id, "CONFIRMED")}
-                                                            >
-                                                                Đã xác nhận
-                                                            </button>
-                                                        )}
-                                                        {order.orderStatus !== "SHIPPED" && (
-                                                            <button
-                                                                className="dropdown-item"
-                                                                onClick={() => handleStatusChange(order.id, "SHIPPED")}
-                                                            >
-                                                                Đang giao hàng
-                                                            </button>
-                                                        )}
-                                                        {order.orderStatus !== "DELIVERED" && (
-                                                            <button
-                                                                className="dropdown-item"
-                                                                onClick={() => handleStatusChange(order.id, "DELIVERED")}
-                                                            >
-                                                                Đã giao hàng
-                                                            </button>
-                                                        )}
-                                                        {order.orderStatus !== "CANCELLED" && (
-                                                            <button
-                                                                className="dropdown-item danger"
-                                                                onClick={() => handleStatusChange(order.id, "CANCELLED")}
-                                                            >
-                                                                Hủy đơn hàng
-                                                            </button>
-                                                        )}
-                                                    </div>
-                                                )}
-                                            </div>
+                                            <button
+                                                className="button primary small"
+                                                onClick={() => handleViewOrderDetail(order.id)}
+                                            >
+                                                <Eye className="icon-small" />
+                                                Xem chi tiết
+                                            </button>
                                         </td>
                                     </tr>
                                 ))
@@ -438,10 +382,10 @@ function Order() {
 
             {/* Order Details Modal */}
             {viewOrderDetails && (
-                <OrderDetailModal
+                <DetailOrder
                     order={viewOrderDetails}
                     onClose={handleCloseModal}
-                    onStatusChange={handleStatusChange}
+                    onStatusUpdate={handleUpdateOrderStatus}
                 />
             )}
         </div>

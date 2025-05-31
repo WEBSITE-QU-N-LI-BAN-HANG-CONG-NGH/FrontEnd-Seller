@@ -277,7 +277,7 @@
 .products-table th,
 .products-table td {
     padding: 0.75rem;
-    text-align: left;
+    text-align: center;
     border-bottom: 1px solid #e2e8f0;
 }
 
@@ -365,11 +365,13 @@
 
 .actions-cell {
     text-align: right;
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
 
 .dropdown {
-    position: relative;
-    display: inline-block;
+    display:flex;
 }
 
 .dropdown-menu {
