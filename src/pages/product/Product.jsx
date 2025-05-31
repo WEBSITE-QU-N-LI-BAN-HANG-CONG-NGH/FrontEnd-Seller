@@ -310,6 +310,7 @@ function Product() {
                                 <th className="id-column">Mã SP</th>
                                 <th className="product-column">Sản phẩm</th>
                                 <th>Danh mục</th>
+                                <th>Danh mục con</th>
                                 <th className="price-column">Giá</th>
                                 <th className="stock-column">Tồn kho</th>
                                 <th className="status-column">Trạng thái</th>
@@ -319,13 +320,13 @@ function Product() {
                             <tbody>
                             {loading ? (
                                 <tr>
-                                    <td colSpan={7} className="empty-table">
+                                    <td colSpan={8} className="empty-table">
                                         <LoadingSpinner size="small" />
                                     </td>
                                 </tr>
                             ) : products.length === 0 ? (
                                 <tr>
-                                    <td colSpan={7} className="empty-table">
+                                    <td colSpan={8} className="empty-table">
                                         Không tìm thấy sản phẩm nào
                                     </td>
                                 </tr>
@@ -346,6 +347,7 @@ function Product() {
                                             </div>
                                         </td>
                                         <td>{product.topLevelCategory || 'Chưa phân loại'}</td>
+                                        <td>{product.secondLevelCategory || 'Chưa phân loại'}</td>
                                         <td className="price-cell">
                                             <div>
                                                 <div className="original-price">{formatCurrency(product.price)}</div>
