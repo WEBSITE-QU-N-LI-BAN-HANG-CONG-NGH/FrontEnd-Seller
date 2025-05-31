@@ -1,9 +1,20 @@
-import {useEffect, useState} from "react";
-import {useNavigate, useParams} from "react-router-dom";
-import {AlertCircle, ArrowLeft, ImagePlus, Info, Save, X} from "lucide-react";
+// src/pages/product/EditProduct.jsx
+import { useState, useEffect } from "react";
+import { useNavigate, useParams } from "react-router-dom";
+import {
+    ArrowLeft,
+    Plus,
+    Trash2,
+    Save,
+    ImagePlus,
+    X,
+    Info,
+    Check,
+    AlertCircle
+} from "lucide-react";
 import "../../styles/product/add_product.css";
 import useProduct from "../../hooks/useProduct";
-import {isNotEmpty, isPositiveNumber} from "../../utils/validators";
+import { isNotEmpty, isPositiveNumber } from "../../utils/validators";
 import LoadingSpinner from "../../components/common/LoadingSpinner";
 import ErrorAlert from "../../components/common/ErrorAlert";
 
@@ -546,6 +557,57 @@ function EditProduct() {
                                             />
                                         </div>
                                     </div>
+
+                                    <div className="form-section">
+                                        <div className="sizes-table">
+                                            <table>
+                                                <thead>
+                                                <tr>
+                                                    <th>Kích thước</th>
+                                                    <th>Số lượng</th>
+                                                    <th>Thao tác</th>
+                                                </tr>
+                                                </thead>
+                                                <tbody>
+                                                {productData.sizes.map((size, index) => (
+                                                    <tr key={index}>
+                                                        <td>
+                                                            <input
+                                                                className="form-input"
+                                                                placeholder="VD: S, M, L, XL, 256GB..."
+                                                                value={size.name}
+                                                                onChange={(e) => handleSizeChange(index, "name", e.target.value)}
+                                                            />
+                                                        </td>
+                                                        <td>
+                                                            <input
+                                                                type="number"
+                                                                className="form-input"
+                                                                placeholder="Số lượng"
+                                                                min="0"
+                                                                value={size.quantity}
+                                                                onChange={(e) => handleSizeChange(index, "quantity", e.target.value)}
+                                                            />
+                                                        </td>
+                                                        <td>
+                                                            <button
+                                                                type="button"
+                                                                className="button icon-only ghost"
+                                                                onClick={() => handleRemoveSize(index)}
+                                                            >
+                                                                <Trash2 className="icon-small danger" />
+                                                            </button>
+                                                        </td>
+                                                    </tr>
+                                                ))}
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                        <button type="button" className="button outline" onClick={handleAddSize}>
+                                            <Plus className="icon-small" />
+                                            Thêm kích thước
+                                        </button>
+                                    </div>
                                 </div>
                             </div>
                         )}
@@ -568,16 +630,6 @@ function EditProduct() {
                                             />
                                         </div>
 
-                                        <div className="form-group">
-                                            <label htmlFor="dimension" className="form-label">Kích thước</label>
-                                            <input
-                                                id="dimension"
-                                                className="form-input"
-                                                placeholder="VD: 35.8 x 24.7 x 1.9 cm"
-                                                value={specifications.dimension}
-                                                onChange={(e) => handleSpecificationChange("dimension", e.target.value)}
-                                            />
-                                        </div>
                                     </div>
 
                                     <div className="form-row">

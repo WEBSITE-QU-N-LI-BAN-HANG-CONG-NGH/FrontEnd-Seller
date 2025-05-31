@@ -229,16 +229,13 @@ function Product() {
                                     <div className="filter-dropdown-content">
                                         <div className="filter-group">
                                             <label>Danh mục</label>
-                                            <select
+                                            <input
+                                                type="text"
                                                 value={localFilters.category}
                                                 onChange={(e) => setLocalFilters({...localFilters, category: e.target.value, subcategory: ''})}
-                                                className="filter-select"
-                                            >
-                                                <option value="">Tất cả</option>
-                                                {categories.topLevel.map(cat => (
-                                                    <option key={cat} value={cat}>{cat}</option>
-                                                ))}
-                                            </select>
+                                                className="filter-input"
+                                                placeholder="Nhập tên danh mục..."
+                                            />
                                         </div>
 
                                         <div className="filter-group">

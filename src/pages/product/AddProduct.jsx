@@ -1,10 +1,20 @@
 // src/pages/product/AddProduct.jsx
-import {useState} from "react";
-import {useNavigate} from "react-router-dom";
-import {AlertCircle, ArrowLeft, ImagePlus, Info, Save, X} from "lucide-react";
+import { useState} from "react";
+import { useNavigate } from "react-router-dom";
+import {
+    ArrowLeft,
+    Plus,
+    Trash2,
+    Save,
+    ImagePlus,
+    X,
+    Info,
+    Check,
+    AlertCircle
+} from "lucide-react";
 import "../../styles/product/add_product.css";
 import useProduct from "../../hooks/useProduct";
-import {isNotEmpty, isPositiveNumber} from "../../utils/validators";
+import { isNotEmpty, isPositiveNumber } from "../../utils/validators";
 import LoadingSpinner from "../../components/common/LoadingSpinner";
 import ErrorAlert from "../../components/common/ErrorAlert";
 
@@ -15,8 +25,8 @@ function AddProduct() {
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [activeTab, setActiveTab] = useState("basic");
     const [productImages, setProductImages] = useState([]);
-    const [sizes, setSizes] = useState([{ name: 'Default', quantity: '' }]);
-    // Fixed specifications based on backend structure
+    
+    // Cố định các trường specifications theo backend schema
     const [specifications, setSpecifications] = useState({
         weight: "",
         dimension: "",
@@ -29,6 +39,7 @@ function AddProduct() {
         powerfulPerformance: "",
         connectionPort: ""
     });
+    
     const [formErrors, setFormErrors] = useState({});
     const [productData, setProductData] = useState({
         title: "",
@@ -43,7 +54,28 @@ function AddProduct() {
         sizes: [],
         featured: false,
         active: true
-});
+    });
+
+    // Xử lý thêm kích thước sản phẩm
+    const handleAddSize = () => {
+        const newSizes = [...productData.sizes];
+        newSizes.push({ name: "", quantity: 0 });
+        setProductData({ ...productData, sizes: newSizes });
+    };
+
+    // Xử lý xóa kích thước sản phẩm
+    const handleRemoveSize = (index) => {
+        const newSizes = [...productData.sizes];
+        newSizes.splice(index, 1);
+        setProductData({ ...productData, sizes: newSizes });
+    };
+
+    // Xử lý thay đổi kích thước sản phẩm
+    const handleSizeChange = (index, field, value) => {
+        const newSizes = [...productData.sizes];
+        newSizes[index][field] = value;
+        setProductData({ ...productData, sizes: newSizes });
+    };
 
     // Xử lý thay đổi thông số kỹ thuật
     const handleSpecChange = (field, value) => {
@@ -72,39 +104,39 @@ function AddProduct() {
 
     // Xác thực form trước khi gửi
     const validateForm = () => {
-    const errors = {};
+        const errors = {};
 
-    if (!isNotEmpty(productData.title)) {
-        errors.title = "Vui lòng nhập tên sản phẩm";
-    }
+        if (!isNotEmpty(productData.title)) {
+            errors.title = "Vui lòng nhập tên sản phẩm";
+        }
 
-    if (!isNotEmpty(productData.brand)) {
-        errors.brand = "Vui lòng nhập thương hiệu";
-    }
+        if (!isNotEmpty(productData.brand)) {
+            errors.brand = "Vui lòng nhập thương hiệu";
+        }
 
-    if (!isPositiveNumber(productData.price)) {
-        errors.price = "Giá bán phải là số dương";
-    }
+        if (!isPositiveNumber(productData.price)) {
+            errors.price = "Giá bán phải là số dương";
+        }
 
-    if (!isPositiveNumber(productData.quantity)) {
-        errors.quantity = "Số lượng phải là số dương";
-    }
+        if (!isPositiveNumber(productData.quantity)) {
+            errors.quantity = "Số lượng phải là số dương";
+        }
 
-    if (!isNotEmpty(productData.description)) {
-        errors.description = "Vui lòng nhập mô tả sản phẩm";
-    }
+        if (!isNotEmpty(productData.description)) {
+            errors.description = "Vui lòng nhập mô tả sản phẩm";
+        }
 
-    if (!isNotEmpty(productData.topLevelCategory)) {
-        errors.topLevelCategory = "Vui lòng chọn danh mục cấp 1";
-    }
+        if (!isNotEmpty(productData.topLevelCategory)) {
+            errors.topLevelCategory = "Vui lòng chọn danh mục cấp 1";
+        }
 
-    if (!isNotEmpty(productData.secondLevelCategory)) {
-        errors.secondLevelCategory = "Vui lòng nhập danh mục phụ";
-    }
+        if (!isNotEmpty(productData.secondLevelCategory)) {
+            errors.secondLevelCategory = "Vui lòng nhập danh mục phụ";
+        }
 
-    setFormErrors(errors);
-    return Object.keys(errors).length === 0;
-};
+        setFormErrors(errors);
+        return Object.keys(errors).length === 0;
+    };
 
     // Xử lý tải lên hình ảnh
     const handleImageUpload = async (event, index) => {
@@ -137,23 +169,6 @@ function AddProduct() {
         setProductImages([...productImages, null]);
     };
 
-    const handleSizeChange = (index, field, value) => {
-        const newSizes = [...sizes];
-        newSizes[index][field] = value;
-        setSizes(newSizes);
-    };
-
-    const addSize = () => {
-        setSizes([...sizes, { name: '', quantity: '' }]);
-    };
-
-    const removeSize = (index) => {
-        if (sizes.length > 1) {
-            const newSizes = sizes.filter((_, i) => i !== index);
-            setSizes(newSizes);
-        }
-    };
-
     // Xử lý gửi form
     const handleSubmit = async (e) => {
         e.preventDefault();
@@ -165,48 +180,25 @@ function AddProduct() {
         setIsSubmitting(true);
 
         try {
-            // Prepare product data with specifications included
+            // Chuẩn bị dữ liệu sản phẩm với specifications riêng biệt
             const formattedData = {
-                title: productData.title,
-                description: productData.description,
+                ...productData,
                 price: parseInt(productData.price),
                 quantity: parseInt(productData.quantity),
                 discountPersent: parseInt(productData.discountPersent || 0),
-                brand: productData.brand,
-                color: productData.color,
-                topLevelCategory: productData.topLevelCategory,
-                secondLevelCategory: productData.secondLevelCategory,
-
-                // Include all specifications from the specifications state
-                weight: specifications.weight || null,
-                dimension: specifications.dimension || null,
-                batteryType: specifications.batteryType || null,
-                batteryCapacity: specifications.batteryCapacity || null,
-                ramCapacity: specifications.ramCapacity || null,
-                romCapacity: specifications.romCapacity || null,
-                screenSize: specifications.screenSize || null,
-                detailedReview: specifications.detailedReview || null,
-                powerfulPerformance: specifications.powerfulPerformance || null,
-                connectionPort: specifications.connectionPort || null,
-
-                // // Format sizes for API
-                // sizes: productData.sizes.map(size => ({
-                //     name: size.name,
-                //     quantity: parseInt(size.quantity)
-                // }))
-
-                sizes: sizes
-                    .filter(size => size.name && size.quantity)
-                    .map(size => ({
-                        name: size.name,
-                        quantity: parseInt(size.quantity)
-                    }))
+                // Thêm các trường specifications
+                ...specifications,
+                // Định dạng sizes cho API
+                sizes: productData.sizes.map(size => ({
+                    name: size.name,
+                    quantity: parseInt(size.quantity)
+                }))
             };
 
-            // Call API to create product
+            // Gọi API tạo sản phẩm
             const result = await createProduct(formattedData);
 
-            // Upload images for created product
+            // Upload hình ảnh cho sản phẩm đã tạo
             if (result.id) {
                 const uploadPromises = productImages
                     .filter(img => img && img.file)
@@ -215,7 +207,7 @@ function AddProduct() {
                 await Promise.all(uploadPromises);
             }
 
-            // Navigate to products list
+            // Chuyển đến trang danh sách sản phẩm
             navigate("/dashboard/products");
 
         } catch (error) {
@@ -475,53 +467,63 @@ function AddProduct() {
                                             />
                                         </div>
                                     </div>
+
+                                    <div className="separator"></div>
+
+                                    <div className="form-section">
+                                        <h3 className="section-title">Kích thước sản phẩm</h3>
+                                        <div className="sizes-table">
+                                            <table>
+                                                <thead>
+                                                <tr>
+                                                    <th>Kích thước</th>
+                                                    <th>Số lượng</th>
+                                                    <th>Thao tác</th>
+                                                </tr>
+                                                </thead>
+                                                <tbody>
+                                                {productData.sizes.map((size, index) => (
+                                                    <tr key={index}>
+                                                        <td>
+                                                            <input
+                                                                className="form-input"
+                                                                placeholder="VD: S, M, L, XL, 256GB..."
+                                                                value={size.name}
+                                                                onChange={(e) => handleSizeChange(index, "name", e.target.value)}
+                                                            />
+                                                        </td>
+                                                        <td>
+                                                            <input
+                                                                type="number"
+                                                                className="form-input"
+                                                                placeholder="Số lượng"
+                                                                min="0"
+                                                                value={size.quantity}
+                                                                onChange={(e) => handleSizeChange(index, "quantity", e.target.value)}
+                                                            />
+                                                        </td>
+                                                        <td>
+                                                            <button
+                                                                type="button"
+                                                                className="button icon-only ghost"
+                                                                onClick={() => handleRemoveSize(index)}
+                                                            >
+                                                                <Trash2 className="icon-small danger" />
+                                                            </button>
+                                                        </td>
+                                                    </tr>
+                                                ))}
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                        <button type="button" className="button outline" onClick={handleAddSize}>
+                                            <Plus className="icon-small" />
+                                            Thêm kích thước
+                                        </button>
+                                    </div>
                                 </div>
                             </div>
                         )}
-                        <div className="separator"></div>
-
-                        <div className="form-section">
-                            <h3>Quản lý kích thước và số lượng</h3>
-                            {sizes.map((size, index) => (
-                                <div key={index} className="form-row">
-                                    <div className="form-group">
-                                        <label className="form-label">Kích thước/Phiên bản</label>
-                                        <input
-                                            className="form-input"
-                                            placeholder="VD: S, M, L hoặc 128GB, 256GB..."
-                                            value={size.name}
-                                            onChange={(e) => handleSizeChange(index, 'name', e.target.value)}
-                                        />
-                                    </div>
-                                    <div className="form-group">
-                                        <label className="form-label">Số lượng</label>
-                                        <input
-                                            type="number"
-                                            className="form-input"
-                                            placeholder="Số lượng"
-                                            min="0"
-                                            value={size.quantity}
-                                            onChange={(e) => handleSizeChange(index, 'quantity', e.target.value)}
-                                        />
-                                    </div>
-                                    <div className="form-group">
-                                        {sizes.length > 1 && (
-                                            <button
-                                                type="button"
-                                                className="button danger"
-                                                onClick={() => removeSize(index)}
-                                            >
-                                                Xóa
-                                            </button>
-                                        )}
-                                    </div>
-                                </div>
-                            ))}
-
-                            <button type="button" className="button outline" onClick={addSize}>
-                                Thêm kích thước
-                            </button>
-                        </div>
 
                         {activeTab === "specifications" && (
                             <div className="card">
@@ -531,128 +533,135 @@ function AddProduct() {
                                 <div className="card-content">
                                     <div className="form-row">
                                         <div className="form-group">
-                                            <label htmlFor="weight" className="form-label">Trọng lượng</label>
+                                            <label htmlFor="weight" className="form-label">
+                                                Trọng lượng
+                                            </label>
                                             <input
                                                 id="weight"
                                                 className="form-input"
+                                                placeholder="VD: 1.5kg, 200g..."
                                                 value={specifications.weight}
                                                 onChange={(e) => handleSpecChange("weight", e.target.value)}
-                                                placeholder="VD: 1.5kg, 200g..."
                                             />
                                         </div>
 
-                                        <div className="form-group">
-                                            <label htmlFor="dimension" className="form-label">Kích thước</label>
-                                            <input
-                                                id="dimension"
-                                                className="form-input"
-                                                value={specifications.dimension}
-                                                onChange={(e) => handleSpecChange("dimension", e.target.value)}
-                                                placeholder="VD: 356 x 251 x 16.8 mm"
-                                            />
-                                        </div>
+                                       
                                     </div>
 
                                     <div className="form-row">
                                         <div className="form-group">
-                                            <label htmlFor="batteryType" className="form-label">Loại pin</label>
+                                            <label htmlFor="batteryType" className="form-label">
+                                                Loại pin
+                                            </label>
                                             <input
                                                 id="batteryType"
                                                 className="form-input"
+                                                placeholder="VD: Li-Ion, Li-Polymer..."
                                                 value={specifications.batteryType}
                                                 onChange={(e) => handleSpecChange("batteryType", e.target.value)}
-                                                placeholder="VD: Li-Polymer, Li-Ion..."
                                             />
                                         </div>
 
                                         <div className="form-group">
-                                            <label htmlFor="batteryCapacity" className="form-label">Dung lượng pin</label>
+                                            <label htmlFor="batteryCapacity" className="form-label">
+                                                Dung lượng pin
+                                            </label>
                                             <input
                                                 id="batteryCapacity"
                                                 className="form-input"
+                                                placeholder="VD: 4000mAh, 86Wh..."
                                                 value={specifications.batteryCapacity}
                                                 onChange={(e) => handleSpecChange("batteryCapacity", e.target.value)}
-                                                placeholder="VD: 5000mAh, 58.2Wh..."
                                             />
                                         </div>
                                     </div>
 
                                     <div className="form-row">
                                         <div className="form-group">
-                                            <label htmlFor="ramCapacity" className="form-label">Dung lượng RAM</label>
+                                            <label htmlFor="ramCapacity" className="form-label">
+                                                Dung lượng RAM
+                                            </label>
                                             <input
                                                 id="ramCapacity"
                                                 className="form-input"
+                                                placeholder="VD: 8GB, 16GB DDR4..."
                                                 value={specifications.ramCapacity}
                                                 onChange={(e) => handleSpecChange("ramCapacity", e.target.value)}
-                                                placeholder="VD: 8GB, 16GB DDR4..."
                                             />
                                         </div>
 
                                         <div className="form-group">
-                                            <label htmlFor="romCapacity" className="form-label">Dung lượng bộ nhớ</label>
+                                            <label htmlFor="romCapacity" className="form-label">
+                                                Dung lượng bộ nhớ
+                                            </label>
                                             <input
                                                 id="romCapacity"
                                                 className="form-input"
+                                                placeholder="VD: 512GB SSD, 1TB HDD..."
                                                 value={specifications.romCapacity}
                                                 onChange={(e) => handleSpecChange("romCapacity", e.target.value)}
-                                                placeholder="VD: 256GB SSD, 512GB..."
                                             />
                                         </div>
                                     </div>
 
                                     <div className="form-group">
-                                        <label htmlFor="screenSize" className="form-label">Kích thước màn hình</label>
+                                        <label htmlFor="screenSize" className="form-label">
+                                            Kích thước màn hình
+                                        </label>
                                         <input
                                             id="screenSize"
                                             className="form-input"
+                                            placeholder="VD: 15.6 inch FHD, 6.1 inch Super Retina..."
                                             value={specifications.screenSize}
                                             onChange={(e) => handleSpecChange("screenSize", e.target.value)}
-                                            placeholder="VD: 15.6 inch Full HD, 6.1 inch OLED..."
                                         />
                                     </div>
 
                                     <div className="form-group">
-                                        <label htmlFor="connectionPort" className="form-label">Cổng kết nối</label>
+                                        <label htmlFor="connectionPort" className="form-label">
+                                            Cổng kết nối
+                                        </label>
                                         <input
                                             id="connectionPort"
                                             className="form-input"
+                                            placeholder="VD: USB-C, USB 3.0, HDMI, Lightning..."
                                             value={specifications.connectionPort}
                                             onChange={(e) => handleSpecChange("connectionPort", e.target.value)}
-                                            placeholder="VD: USB-C, USB 3.0, HDMI, 3.5mm..."
                                         />
                                     </div>
 
                                     <div className="separator"></div>
 
                                     <div className="form-group">
-                                        <label htmlFor="detailedReview" className="form-label">Đánh giá chi tiết</label>
+                                        <label htmlFor="detailedReview" className="form-label">
+                                            Đánh giá chi tiết
+                                        </label>
                                         <textarea
                                             id="detailedReview"
                                             className="form-textarea"
+                                            placeholder="Nhập đánh giá chi tiết về sản phẩm..."
                                             value={specifications.detailedReview}
                                             onChange={(e) => handleSpecChange("detailedReview", e.target.value)}
-                                            placeholder="Nhập đánh giá chi tiết về sản phẩm..."
-                                            rows="4"
                                         ></textarea>
                                     </div>
 
                                     <div className="form-group">
-                                        <label htmlFor="powerfulPerformance" className="form-label">Hiệu năng mạnh mẽ</label>
+                                        <label htmlFor="powerfulPerformance" className="form-label">
+                                            Hiệu năng mạnh mẽ
+                                        </label>
                                         <textarea
                                             id="powerfulPerformance"
                                             className="form-textarea"
+                                            placeholder="Mô tả về hiệu năng và khả năng xử lý của sản phẩm..."
                                             value={specifications.powerfulPerformance}
                                             onChange={(e) => handleSpecChange("powerfulPerformance", e.target.value)}
-                                            placeholder="Mô tả về hiệu năng và sức mạnh của sản phẩm..."
-                                            rows="4"
                                         ></textarea>
                                     </div>
 
                                     <div className="alert info">
                                         <Info className="icon-small" />
                                         <p className="alert-description">
-                                            Điền đầy đủ thông số kỹ thuật giúp khách hàng hiểu rõ hơn về sản phẩm và tăng khả năng mua hàng.
+                                            Thông tin chi tiết về thông số kỹ thuật giúp khách hàng hiểu rõ hơn về sản phẩm và đưa ra quyết định mua hàng phù hợp.
                                         </p>
                                     </div>
                                 </div>
@@ -707,7 +716,6 @@ function AddProduct() {
                                             </button>
                                         )}
                                     </div>
-
                                 </div>
                             </div>
                         )}
