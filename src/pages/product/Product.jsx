@@ -229,13 +229,16 @@ function Product() {
                                     <div className="filter-dropdown-content">
                                         <div className="filter-group">
                                             <label>Danh mục</label>
-                                            <input
-                                                type="text"
+                                            <select
                                                 value={localFilters.category}
                                                 onChange={(e) => setLocalFilters({...localFilters, category: e.target.value, subcategory: ''})}
-                                                className="filter-input"
-                                                placeholder="Nhập tên danh mục..."
-                                            />
+                                                className="filter-select"
+                                            >
+                                                <option value="">Tất cả</option>
+                                                {categories.topLevel.map(cat => (
+                                                    <option key={cat} value={cat}>{cat}</option>
+                                                ))}
+                                            </select>
                                         </div>
 
                                         <div className="filter-group">
@@ -310,7 +313,6 @@ function Product() {
                                 <th className="id-column">Mã SP</th>
                                 <th className="product-column">Sản phẩm</th>
                                 <th>Danh mục</th>
-                                <th>Danh mục con</th>
                                 <th className="price-column">Giá</th>
                                 <th className="stock-column">Tồn kho</th>
                                 <th className="status-column">Trạng thái</th>
@@ -320,13 +322,13 @@ function Product() {
                             <tbody>
                             {loading ? (
                                 <tr>
-                                    <td colSpan={8} className="empty-table">
+                                    <td colSpan={7} className="empty-table">
                                         <LoadingSpinner size="small" />
                                     </td>
                                 </tr>
                             ) : products.length === 0 ? (
                                 <tr>
-                                    <td colSpan={8} className="empty-table">
+                                    <td colSpan={7} className="empty-table">
                                         Không tìm thấy sản phẩm nào
                                     </td>
                                 </tr>
@@ -347,7 +349,6 @@ function Product() {
                                             </div>
                                         </td>
                                         <td>{product.topLevelCategory || 'Chưa phân loại'}</td>
-                                        <td>{product.secondLevelCategory || 'Chưa phân loại'}</td>
                                         <td className="price-cell">
                                             <div>
                                                 <div className="original-price">{formatCurrency(product.price)}</div>

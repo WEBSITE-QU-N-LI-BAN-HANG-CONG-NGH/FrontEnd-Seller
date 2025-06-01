@@ -127,7 +127,7 @@ function AddProduct() {
         }
 
         if (!isNotEmpty(productData.topLevelCategory)) {
-            errors.topLevelCategory = "Vui lòng chọn danh mục cấp 1";
+            errors.topLevelCategory = "Vui lòng nhập danh mục cấp 1";
         }
 
         if (!isNotEmpty(productData.secondLevelCategory)) {
@@ -345,21 +345,16 @@ function AddProduct() {
                                             <label htmlFor="topLevelCategory" className="form-label">
                                                 Danh mục <span className="required">*</span>
                                             </label>
-                                            <select
+                                            <input
+                                                type="text"
                                                 id="topLevelCategory"
                                                 name="topLevelCategory"
-                                                className={`form-select ${formErrors.topLevelCategory ? 'error' : ''}`}
+                                                className={`form-input ${formErrors.topLevelCategory ? 'error' : ''}`}
+                                                placeholder="VD: Laptop, Điện thoại, Máy tính bảng..."
                                                 value={productData.topLevelCategory}
                                                 onChange={handleInputChange}
                                                 required
-                                            >
-                                                <option value="">Chọn danh mục</option>
-                                                <option value="Laptop">Laptop</option>
-                                                <option value="Điện thoại">Điện thoại</option>
-                                                <option value="Máy tính bảng">Máy tính bảng</option>
-                                                <option value="Phụ kiện">Phụ kiện</option>
-                                                <option value="Màn hình">Màn hình</option>
-                                            </select>
+                                            />
                                             {formErrors.topLevelCategory && <div className="form-error">{formErrors.topLevelCategory}</div>}
                                         </div>
 
