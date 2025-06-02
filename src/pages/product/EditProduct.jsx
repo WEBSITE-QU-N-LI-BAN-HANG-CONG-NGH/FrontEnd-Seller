@@ -41,7 +41,7 @@ function EditProduct() {
     const [specifications, setSpecifications] = useState({
         weight: "",
         dimension: "",
-        batteryType: "",
+        batteryTtype: "",
         batteryCapacity: "",
         ramCapacity: "",
         romCapacity: "",
@@ -59,8 +59,8 @@ function EditProduct() {
         quantity: "",
         description: "",
         topLevelCategory: "",
-        secondLevelCategory: "", 
-        discountPersent: 0,
+        secondLevelCategory: "",
+        discountPercent: 0,
         color: "",
         sizes: [],
         featured: false,
@@ -92,7 +92,7 @@ function EditProduct() {
                     description: product.description || "",
                     topLevelCategory: product.topLevelCategory || "",
                     secondLevelCategory: product.secondLevelCategory || "",
-                    discountPersent: product.discountPersent || 0,
+                    discountPercent: product.discountPercent || 0,
                     color: product.color || "",
                     sizes: product.sizes || [],
                     featured: product.featured || false,
@@ -103,7 +103,7 @@ function EditProduct() {
                 setSpecifications({
                     weight: product.weight || "",
                     dimension: product.dimension || "",
-                    batteryType: product.batteryType || "",
+                    batteryTtype: product.batteryTtype || "",
                     batteryCapacity: product.batteryCapacity || "",
                     ramCapacity: product.ramCapacity || "",
                     romCapacity: product.romCapacity || "",
@@ -115,9 +115,9 @@ function EditProduct() {
 
                 // Set existing images
                 if (product.imageUrls && product.imageUrls.length > 0) {
-                    const existingImgs = product.imageUrls.map((url, index) => ({
-                        id: index,
-                        url: url,
+                    const existingImgs = product.imageUrls.map((imageObj, index) => ({
+                        id: imageObj.id || index,
+                        url: imageObj.downloadUrl || imageObj.url, // Support both formats
                         isExisting: true
                     }));
                     setExistingImages(existingImgs);
@@ -279,7 +279,7 @@ function EditProduct() {
                 ...specifications, // Include all specification fields
                 price: parseInt(productData.price),
                 quantity: parseInt(productData.quantity),
-                discountPersent: parseInt(productData.discountPersent || 0),
+                discountPercent: parseInt(productData.discountPercent || 0),
                 // Định dạng sizes cho API
                 sizes: productData.sizes.map(size => ({
                     name: size.name,
@@ -547,7 +547,7 @@ function EditProduct() {
                                                 placeholder="VD: 10"
                                                 min="0"
                                                 max="100"
-                                                value={productData.discountPersent}
+                                                value={productData.discountPercent}
                                                 onChange={handleInputChange}
                                             />
                                         </div>
@@ -634,7 +634,7 @@ function EditProduct() {
                                                 id="batteryType"
                                                 className="form-input"
                                                 placeholder="VD: Li-Ion"
-                                                value={specifications.batteryType}
+                                                value={specifications.batteryTtype}
                                                 onChange={(e) => handleSpecificationChange("batteryType", e.target.value)}
                                             />
                                         </div>
@@ -740,7 +740,7 @@ function EditProduct() {
                                             <div key={index} className="image-item">
                                                 <div className="image-container">
                                                     <img
-                                                        src={image ? (image.preview || image.url) : "/placeholder.svg"}
+                                                        src={image ? (image.preview || image.url || image.downloadUrl) : "/placeholder.svg"}
                                                         alt={`Product image ${index + 1}`}
                                                         className="product-image"
                                                     />

@@ -352,12 +352,12 @@ function Product() {
                                         <td className="price-cell">
                                             <div>
                                                 <div className="original-price">{formatCurrency(product.price)}</div>
-                                                {product.discountPersent > 0 && (
-                                                    <div className="discounted-price">
-                                                        {formatCurrency(product.discountedPrice)}
-                                                        <span className="discount-badge">-{product.discountPersent}%</span>
-                                                    </div>
-                                                )}
+                                                {/*{product.discountPercent  > 0 && (*/}
+                                                {/*    <div className="discounted-price">*/}
+                                                {/*        {formatCurrency(product.discountedPrice)}*/}
+                                                {/*        <span className="discount-badge">-{product.discountPercent }%</span>*/}
+                                                {/*    </div>*/}
+                                                {/*)}*/}
                                             </div>
                                         </td>
                                         <td className="stock-cell">{product.quantity}</td>

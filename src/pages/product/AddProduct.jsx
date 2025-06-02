@@ -30,7 +30,7 @@ function AddProduct() {
     const [specifications, setSpecifications] = useState({
         weight: "",
         dimension: "",
-        batteryType: "",
+        batteryTtype: "",
         batteryCapacity: "",
         ramCapacity: "",
         romCapacity: "",
@@ -48,8 +48,8 @@ function AddProduct() {
         quantity: "",
         description: "",
         topLevelCategory: "",
-        secondLevelCategory: "", 
-        discountPersent: 0,
+        secondLevelCategory: "",
+        discountPercent: 0,
         color: "",
         sizes: [],
         featured: false,
@@ -185,7 +185,7 @@ function AddProduct() {
                 ...productData,
                 price: parseInt(productData.price),
                 quantity: parseInt(productData.quantity),
-                discountPersent: parseInt(productData.discountPersent || 0),
+                discountPercent: parseInt(productData.discountPercent || 0),
                 // Thêm các trường specifications
                 ...specifications,
                 // Định dạng sizes cho API
@@ -457,7 +457,7 @@ function AddProduct() {
                                                 placeholder="VD: 10"
                                                 min="0"
                                                 max="100"
-                                                value={productData.discountPersent}
+                                                value={productData.discountPercent}
                                                 onChange={handleInputChange}
                                             />
                                         </div>
@@ -552,7 +552,7 @@ function AddProduct() {
                                                 id="batteryType"
                                                 className="form-input"
                                                 placeholder="VD: Li-Ion, Li-Polymer..."
-                                                value={specifications.batteryType}
+                                                value={specifications.batteryTtype}
                                                 onChange={(e) => handleSpecChange("batteryType", e.target.value)}
                                             />
                                         </div>
