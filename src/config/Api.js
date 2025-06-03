@@ -31,50 +31,18 @@ api.interceptors.request.use(
 
 // Interceptor xử lý response
 api.interceptors.response.use(
-    (response) => {
-        return response;
-    },
+    (response) => response,
     async (error) => {
-        const originalRequest = error.config;
+        if (error.response?.status === 401 && !error.config._retry) {
+            error.config._retry = true;
 
-        // Nếu là lỗi 429 (Too Many Requests), hiển thị thông báo rõ ràng
-        if (error.response?.status === 429) {
-            console.warn('Rate limit exceeded - Quá nhiều yêu cầu. Vui lòng thử lại sau 1 phút.');
-        }
+            // Remove correct token key
+            localStorage.removeItem('jwt'); // Not 'accessToken'
 
-        // Nếu là lỗi 401 Unauthorized và chưa thử refresh token
-        if (error.response?.status === 401 && !originalRequest._retry) {
-            originalRequest._retry = true;
-
-            try {
-                console.log('Token hết hạn, thử refresh token...');
-
-                // Xử lý refresh token nếu cần
-                // ...
-
-                // Trong trường hợp không có refresh token hoặc không thể refresh
-                console.log('Phiên đăng nhập hết hạn, chuyển về trang đăng nhập...');
-                localStorage.removeItem('jwt');
-
-                // Nếu đang ở trang seller thì chuyển về trang đăng nhập của customer
-                if (window.location.href.includes('localhost:5174')) {
-                    window.location.href = 'http://localhost:5173';
-                }
-
-                return Promise.reject(error);
-            } catch (refreshError) {
-                console.error('Lỗi khi refresh token:', refreshError);
-                localStorage.removeItem('jwt');
-
-                // Nếu đang ở trang seller thì chuyển về trang đăng nhập của customer
-                if (window.location.href.includes('localhost:5174')) {
-                    window.location.href = 'http://localhost:5173';
-                }
-
-                return Promise.reject(refreshError);
+            if (window.location.href.includes('localhost:5174')) {
+                window.location.href = 'http://localhost:5173';
             }
         }
-
         return Promise.reject(error);
     }
 );

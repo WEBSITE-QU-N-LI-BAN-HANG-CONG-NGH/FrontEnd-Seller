@@ -1,17 +1,27 @@
-import { Navigate } from 'react-router-dom';
 
-// URL để chuyển hướng về trang đăng nhập của customer
-const CUSTOMER_LOGIN_URL = 'http://localhost:5173';
+import { useEffect, useState } from 'react';
+import useAuth from '../../hooks/useAuth';
+import LoadingSpinner from './LoadingSpinner';
 
 const PrivateRoute = ({ children }) => {
-    // Kiểm tra token trực tiếp từ localStorage
-    const token = localStorage.getItem('accessToken');
+    const { user, loading } = useAuth();
 
-    if (!token) {
-        console.log('Không tìm thấy token, chuyển hướng đến trang đăng nhập customer');
-        // Thực hiện chuyển hướng thay vì sử dụng <Navigate>
-        window.location.href = `${CUSTOMER_LOGIN_URL}`;
-        return null; // Trả về null để không render gì khi đang chuyển hướng
+    useEffect(() => {
+        // Only redirect after loading is complete and no user found
+        if (!loading && !user) {
+            console.log('No authenticated user, redirecting to customer login');
+            window.location.href = 'http://localhost:5173';
+        }
+    }, [user, loading]);
+
+    // Show loading while checking authentication
+    if (loading) {
+        return <LoadingSpinner />;
+    }
+
+    // Don't render anything if redirecting
+    if (!user) {
+        return null;
     }
 
     return children;
