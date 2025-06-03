@@ -46,20 +46,25 @@ function DashboardLayout({ children }) {
     // Xử lý đăng xuất
     const handleLogout = async () => {
         try {
-            // Gọi API logout
+            // Call logout API
             await api.post('/auth/logout');
         } catch (error) {
-            console.error("Lỗi khi đăng xuất:", error);
-            // Tiếp tục xử lý ngay cả khi có lỗi
+            console.error("Error during logout:", error);
+            // Continue with logout process even if API fails
         } finally {
-            // Xóa token và chuyển hướng bất kể kết quả API
-            localStorage.removeItem('jwt');
-            navigate('/login');
+            // Clear all localStorage data
+            localStorage.clear();
 
-            // Nếu vẫn gặp vấn đề, có thể thử chuyển hướng đến trang chính
-            setTimeout(() => {
-                window.location.href = 'http://localhost:5173/login';
-            }, 300);
+            // Clear all cookies (including refreshToken)
+            document.cookie.split(";").forEach(function(c) {
+                document.cookie = c.replace(/^ +/, "").replace(/=.*/, "=;expires=" + new Date().toUTCString() + ";path=/");
+            });
+
+            // Clear sessionStorage as well
+            sessionStorage.clear();
+
+            // Redirect to customer app homepage (not login page)
+            window.location.href = 'http://localhost:5173';
         }
     };
 

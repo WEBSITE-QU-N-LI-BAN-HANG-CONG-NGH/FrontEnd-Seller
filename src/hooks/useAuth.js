@@ -9,6 +9,18 @@ const useAuth = () => {
     const [error, setError] = useState(null);
     const navigate = useNavigate();
 
+    useEffect(() => {
+        const params = new URLSearchParams(window.location.search);
+        const tokenFromUrl = params.get('token');
+
+        if (tokenFromUrl) {
+            console.log('Token received from URL, saving to localStorage');
+            localStorage.setItem('jwt', tokenFromUrl);
+            window.history.replaceState({}, document.title, window.location.pathname);
+        }
+    }, []);
+
+
     // Kiểm tra JWT token có phải SELLER không
     const checkSellerFromToken = useCallback(() => {
         try {
@@ -110,13 +122,25 @@ const useAuth = () => {
         try {
             await api.post('/auth/logout');
         } catch (error) {
-            console.error('Lỗi đăng xuất:', error);
+            console.error('Logout API error:', error);
         } finally {
-            localStorage.removeItem('jwt');
+            // Clear all localStorage data
+            localStorage.clear();
+
+            // Clear all cookies
+            document.cookie.split(";").forEach(function(c) {
+                document.cookie = c.replace(/^ +/, "").replace(/=.*/, "=;expires=" + new Date().toUTCString() + ";path=/");
+            });
+
+            // Clear sessionStorage
+            sessionStorage.clear();
+
             setUser(null);
-            navigate('/login');
+
+            // Redirect to customer homepage
+            window.location.href = 'http://localhost:5173';
         }
-    }, [navigate]);
+    }, []);
 
     return { user, loading, error, login, logout };
 };

@@ -1,453 +1,449 @@
 .products-page {
-    display: flex;
-    flex-direction: column;
-    gap: 1rem;
-    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
 }
 
 .page-header {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
 }
 
 .page-title {
-    font-size: 1.5rem;
-    font-weight: 700;
-    margin: 0;
+  font-size: 1.5rem;
+  font-weight: 700;
+  margin: 0;
 }
 
 .card {
-    background-color: white;
-    border-radius: 0.5rem;
-    border: 1px solid #e2e8f0;
-    overflow: hidden;
+  background-color: white;
+  border-radius: 0.5rem;
+  border: 1px solid #e2e8f0;
+  overflow: hidden;
 }
 
 .card-header {
-    padding: 1.5rem;
-    border-bottom: 1px solid #e2e8f0;
+  padding: 1.5rem;
+  border-bottom: 1px solid #e2e8f0;
 }
 
 .card-title {
-    font-size: 1.25rem;
-    font-weight: 600;
-    margin: 0 0 0.25rem 0;
+  font-size: 1.25rem;
+  font-weight: 600;
+  margin: 0 0 0.25rem 0;
 }
 
 .card-description {
-    color: #6b7280;
-    font-size: 0.875rem;
-    margin: 0;
+  color: #6b7280;
+  font-size: 0.875rem;
+  margin: 0;
 }
 
 .card-content {
-    padding: 1.5rem;
-    display: flex;
-    flex-direction: column;
-    gap: 1rem;
+  padding: 1.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
 }
 
 .filters-product {
-    display: flex;
-    flex-direction: column;
-    gap: 1rem;
-    margin-bottom: 0.5rem;
-    align-items: start;
-    justify-content: center;
-    width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  margin-bottom: 0.5rem;
+  align-items: start;
+  justify-content: center;
+  width: 100%;
 }
 
-
 .search-container {
-    position: relative;
-    width: 100%;
+  position: relative;
+  width: 100%;
 }
 
 @media (min-width: 640px) {
-    .search-container {
-        width: 24rem;
-    }
+  .search-container {
+    width: 24rem;
+  }
 }
 
 .search-icon {
-    position: absolute;
-    left: 0.625rem;
-    top: 0.625rem;
-    width: 1rem;
-    height: 1rem;
-    color: #6b7280;
+  position: absolute;
+  left: 0.625rem;
+  top: 0.625rem;
+  width: 1rem;
+  height: 1rem;
+  color: #6b7280;
 }
 
 .search-input {
-    width: 100%;
-    padding: 0.5rem 0.5rem 0.5rem 2rem;
-    border-radius: 0.375rem;
-    border: 1px solid #e2e8f0;
-    font-size: 0.875rem;
+  width: 100%;
+  padding: 0.5rem 0.5rem 0.5rem 2rem;
+  border-radius: 0.375rem;
+  border: 1px solid #e2e8f0;
+  font-size: 0.875rem;
 }
 
 .filter-action {
-    width: 100%;
-    display: flex;
+  width: 100%;
+  display: flex;
 }
 
 .filter-dropdown-container {
-    width: 100%;
-    display: flex;
+  width: 100%;
+  display: flex;
 }
 
 .filter-group {
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
-    align-items: center;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  align-items: center;
 }
 
 .filter-menu {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 5px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 5px;
 }
 
 .filter-dropdown {
-    display: flex;
-    flex-direction: row;
-    align-items: center;
-    gap: 200px;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 200px;
 }
 
 .filter-dropdown-content {
-    display: flex;
-    flex-direction: row;
-    gap: 20px;
+  display: flex;
+  flex-direction: row;
+  gap: 20px;
 }
 
 .filter-dropdown-footer {
-    display: flex;
-    flex-direction: row;
-    gap: 5px;
+  display: flex;
+  flex-direction: row;
+  gap: 5px;
 }
 
 .filter-select {
-    border-radius: 0.375rem;
-    border: 1px solid #e2e8f0;
-    font-size: 0.875rem;
-    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  border-radius: 0.375rem;
+  border: 1px solid #e2e8f0;
+  font-size: 0.875rem;
+  font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
 }
 
 .filter-input {
-    border-radius: 0.375rem;
-    border: 1px solid #e2e8f0;
-    font-size: 0.875rem;
-    padding: 8px 8px 8px 8px;
-    text-align: center;
-    height: 37.6px;
+  border-radius: 0.375rem;
+  border: 1px solid #e2e8f0;
+  font-size: 0.875rem;
+  padding: 8px 8px 8px 8px;
+  text-align: center;
+  height: 37.6px;
 }
 
-.button, button-product {
-    padding: 8px;
-    border-radius: 0.375rem;
-    font-size: 0.875rem;
-    font-weight: 500;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    gap: 0.5rem;
-    cursor: pointer;
-    transition: background-color 0.2s, border-color 0.2s;
-    max-width: fit-content;
-    background-color: #3b82f6;
-    color: white;
-    border-color: white;
+.button,
+button-product {
+  padding: 8px;
+  border-radius: 0.375rem;
+  font-size: 0.875rem;
+  font-weight: 500;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  cursor: pointer;
+  transition: background-color 0.2s, border-color 0.2s;
+  max-width: fit-content;
+  background-color: #3b82f6;
+  color: white;
+  border-color: white;
 }
-
-
 
 .button-product.primary {
-    background-color: #3b82f6;
-    color: white;
-    border: none;
+  background-color: #3b82f6;
+  color: white;
+  border: none;
 }
 
 .button.primary:hover {
-    background-color: #2563eb;
+  background-color: #2563eb;
 }
 
 .button.outline {
-    background-color: transparent;
-    border: 1px solid #e2e8f0;
-    color: inherit;
+  background-color: transparent;
+  border: 1px solid #e2e8f0;
+  color: inherit;
 }
 
 .button-product.outline {
-    background-color: transparent;
-    border: 1px solid #e2e8f0;
-    color: inherit;
+  background-color: transparent;
+  border: 1px solid #e2e8f0;
+  color: inherit;
 }
 
 .button-config.icon-only {
-    padding: 0.25rem;
+  padding: 0.25rem;
 }
 
 .button-config {
-    padding: 0.5rem 1rem;
-    border-radius: 0.375rem;
-    font-size: 0.875rem;
-    font-weight: 500;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    gap: 0.5rem;
-    cursor: pointer;
-    transition: background-color 0.2s, border-color 0.2s;
+  padding: 0.5rem 1rem;
+  border-radius: 0.375rem;
+  font-size: 0.875rem;
+  font-weight: 500;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  cursor: pointer;
+  transition: background-color 0.2s, border-color 0.2s;
 }
 
 .button-config.ghost {
-    background-color: transparent;
-    border: none;
+  background-color: transparent;
+  border: none;
 }
 
-
 .button.outline:disabled {
-    opacity: 0.5;
-    cursor: not-allowed;
+  opacity: 0.5;
+  cursor: not-allowed;
 }
 
 .button-product.outline:disabled {
-    opacity: 0.5;
-    cursor: not-allowed;
+  opacity: 0.5;
+  cursor: not-allowed;
 }
 
 .button.small {
-    padding: 0.25rem 0.5rem;
-    font-size: 0.75rem;
+  padding: 0.25rem 0.5rem;
+  font-size: 0.75rem;
 }
 
-
 .button-product.outline:disabled {
-    opacity: 0.5;
-    cursor: not-allowed;
+  opacity: 0.5;
+  cursor: not-allowed;
 }
 
 .button-product.small {
-    padding: 8px;
-    font-size: 0.75rem;
+  padding: 8px;
+  font-size: 0.75rem;
 }
 
 .button.icon-only {
-    padding: 0.25rem;
+  padding: 0.25rem;
 }
 
 .button.ghost {
-    background-color: transparent;
-    border: none;
+  background-color: transparent;
+  border: none;
 }
 
 .button.active {
-    background-color: #3b82f6;
-    color: white;
-    border-color: #3b82f6;
+  background-color: #3b82f6;
+  color: white;
+  border-color: #3b82f6;
 }
 
 .button-product.active {
-    background-color: #3b82f6;
-    color: white;
-    border-color: #3b82f6;
+  background-color: #3b82f6;
+  color: white;
+  border-color: #3b82f6;
 }
 
-
 .icon-small {
-    width: 1rem;
-    height: 1rem;
+  width: 1rem;
+  height: 1rem;
 }
 
 .products-table-container {
-    border: 1px solid #e2e8f0;
-    border-radius: 0.375rem;
-    overflow-x: auto;
+  border: 1px solid #e2e8f0;
+  border-radius: 0.375rem;
+  overflow-x: auto;
 }
 
 .products-table {
-    width: 100%;
-    border-collapse: collapse;
+  width: 100%;
+  border-collapse: collapse;
 }
 
 .products-table th,
 .products-table td {
-    padding: 0.75rem;
-    text-align: center;
-    border-bottom: 1px solid #e2e8f0;
+  padding: 0.75rem;
+  text-align: center;
+  border-bottom: 1px solid #e2e8f0;
 }
 
 .products-table tr:last-child td {
-    border-bottom: none;
+  border-bottom: none;
 }
 
 .products-table th {
-    font-size: 0.75rem;
-    font-weight: 500;
-    color: #6b7280;
-    text-transform: uppercase;
-    letter-spacing: 0.05em;
+  font-size: 0.75rem;
+  font-weight: 500;
+  color: #6b7280;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
 }
 
 .id-column {
-    width: 5rem;
+  width: 5rem;
 }
 
 .product-column {
-    min-width: 9.375rem;
+  min-width: 9.375rem;
 }
 
 .price-column,
 .stock-column,
 .status-column {
-    text-align: center;
+  text-align: center;
 }
 
 .actions-column {
-    width: 5rem;
-    text-align: center;
+  width: 5rem;
+  text-align: center;
 }
 
 .id-cell {
-    font-weight: 500;
+  font-weight: 500;
 }
 
 .product-info {
-    display: flex;
-    align-items: center;
-    gap: 0.75rem;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
 }
 
 .product-thumbnail {
-    width: 2.5rem;
-    height: 2.5rem;
-    border-radius: 0.25rem;
-    object-fit: cover;
+  width: 2.5rem;
+  height: 2.5rem;
+  border-radius: 0.25rem;
+  object-fit: cover;
 }
 
 .product-name {
-    font-weight: 500;
+  font-weight: 500;
 }
 
 .price-cell {
-    text-align: right;
+  text-align: right;
 }
 
 .stock-cell {
-    text-align: center;
+  text-align: center;
 }
 
 .status-cell {
-    text-align: center;
+  text-align: center;
 }
 
 .status-badge {
-    display: inline-block;
-    padding: 0.25rem 0.5rem;
-    border-radius: 9999px;
-    font-size: 0.75rem;
-    font-weight: 500;
+  display: inline-block;
+  padding: 0.25rem 0.5rem;
+  border-radius: 9999px;
+  font-size: 0.75rem;
+  font-weight: 500;
 }
 
 .status-badge.active {
-    background-color: #dcfce7;
-    color: #166534;
+  background-color: #dcfce7;
+  color: #166534;
 }
 
 .status-badge.inactive {
-    background-color: #fee2e2;
-    color: #b91c1c;
+  background-color: #fee2e2;
+  color: #b91c1c;
 }
 
 .actions-cell {
-    text-align: right;
-    display: flex;
-    align-items: center;
-    justify-content: center;
+  text-align: right;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .dropdown {
-    display:flex;
+  display: flex;
 }
 
 .dropdown-menu {
-    position: absolute;
-    right: 0;
-    z-index: 10;
-    min-width: 10rem;
-    padding: 0.5rem;
-    margin-top: 0.25rem;
-    background-color: white;
-    border-radius: 0.375rem;
-    border: 1px solid #e2e8f0;
-    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+  position: absolute;
+  right: 0;
+  z-index: 10;
+  min-width: 10rem;
+  padding: 0.5rem;
+  margin-top: 0.25rem;
+  background-color: white;
+  border-radius: 0.375rem;
+  border: 1px solid #e2e8f0;
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1),
+    0 4px 6px -2px rgba(0, 0, 0, 0.05);
 }
 
 .dropdown-header {
-    padding: 0.5rem;
-    font-size: 0.75rem;
-    font-weight: 500;
-    color: #6b7280;
+  padding: 0.5rem;
+  font-size: 0.75rem;
+  font-weight: 500;
+  color: #6b7280;
 }
 
 .dropdown-divider {
-    height: 1px;
-    margin: 0.25rem 0;
-    background-color: #e2e8f0;
+  height: 1px;
+  margin: 0.25rem 0;
+  background-color: #e2e8f0;
 }
 
 .dropdown-item {
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-    width: 100%;
-    padding: 0.5rem;
-    text-align: left;
-    font-size: 0.875rem;
-    background: none;
-    border: none;
-    border-radius: 0.25rem;
-    cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  width: 100%;
+  padding: 0.5rem;
+  text-align: left;
+  font-size: 0.875rem;
+  background: none;
+  border: none;
+  border-radius: 0.25rem;
+  cursor: pointer;
 }
 
 .dropdown-item:hover {
-    background-color: #f8fafc;
+  background-color: #f8fafc;
 }
 
 .dropdown-item.danger {
-    color: #ef4444;
+  color: #ef4444;
 }
 
 .dropdown-item.danger:hover {
-    background-color: #fee2e2;
+  background-color: #fee2e2;
 }
 
 .empty-table {
-    height: 6rem;
-    text-align: center;
-    color: #6b7280;
+  height: 6rem;
+  text-align: center;
+  color: #6b7280;
 }
 
 .pagination {
-    display: flex;
-    align-items: center;
-    justify-content: flex-end;
-    gap: 0.5rem;
-    padding: 1rem 0;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 0.5rem;
+  padding: 1rem 0;
 }
 
 .sr-only {
-    position: absolute;
-    width: 1px;
-    height: 1px;
-    padding: 0;
-    margin: -1px;
-    overflow: hidden;
-    clip: rect(0, 0, 0, 0);
-    white-space: nowrap;
-    border-width: 0;
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border-width: 0;
 }

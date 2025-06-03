@@ -58,7 +58,7 @@ api.interceptors.response.use(
 
                 // Nếu đang ở trang seller thì chuyển về trang đăng nhập của customer
                 if (window.location.href.includes('localhost:5174')) {
-                    window.location.href = 'http://localhost:5173/login';
+                    window.location.href = 'http://localhost:5173';
                 }
 
                 return Promise.reject(error);
@@ -68,7 +68,7 @@ api.interceptors.response.use(
 
                 // Nếu đang ở trang seller thì chuyển về trang đăng nhập của customer
                 if (window.location.href.includes('localhost:5174')) {
-                    window.location.href = 'http://localhost:5173/login';
+                    window.location.href = 'http://localhost:5173';
                 }
 
                 return Promise.reject(refreshError);

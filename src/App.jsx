@@ -3,7 +3,6 @@ import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-d
 import { useEffect } from 'react';
 import { Provider } from 'react-redux';
 import {store} from './state/store.js'; // Đảm bảo import store của bạn
-import AuthBridge from "./components/AuthBridge";
 import DashboardLayout from "./components/layout/DashboardLayout";
 import Dashboard from "./pages/dashboard/Dashboard";
 import Product from "./pages/product/Product";
@@ -35,7 +34,6 @@ function App() {
     return (
         <Provider store={store}>
             <Router>
-                <AuthBridge>
                     <Routes>
                         {/* Trang dashboard (cần đăng nhập) */}
                         <Route
@@ -111,7 +109,6 @@ function App() {
                         {/* Tất cả các route không khớp sẽ chuyển về dashboard */}
                         <Route path="*" element={<Navigate to="/dashboard" replace />} />
                     </Routes>
-                </AuthBridge>
             </Router>
         </Provider>
     );
