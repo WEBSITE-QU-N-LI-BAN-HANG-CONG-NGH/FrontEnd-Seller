@@ -117,28 +117,30 @@ const useAuth = () => {
         }
     };
 
-    // Đăng xuất
+    // src/hooks/useAuth.js - Thêm logging chi tiết
     const logout = useCallback(async () => {
         try {
-            await api.post('/auth/logout');
+            console.log('=== LOGOUT DEBUG ===');
+            console.log('Before logout - cookies:', document.cookie);
+
+            const response = await api.post('/auth/logout');
+            console.log('Logout API response:', response);
+            console.log('Response headers:', response.headers);
+
         } catch (error) {
             console.error('Logout API error:', error);
         } finally {
-            // Clear all localStorage data
             localStorage.clear();
-
-            // Clear all cookies
-            document.cookie.split(";").forEach(function(c) {
-                document.cookie = c.replace(/^ +/, "").replace(/=.*/, "=;expires=" + new Date().toUTCString() + ";path=/");
-            });
-
-            // Clear sessionStorage
             sessionStorage.clear();
+
+            console.log('After localStorage clear - JWT:', localStorage.getItem('jwt'));
 
             setUser(null);
 
-            // Redirect to customer homepage
-            window.location.href = 'http://localhost:5173';
+            setTimeout(() => {
+                console.log('Before redirect - cookies:', document.cookie);
+                window.location.href = 'http://localhost:5173';
+            }, 2000);
         }
     }, []);
 
