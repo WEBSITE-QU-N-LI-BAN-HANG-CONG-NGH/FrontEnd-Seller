@@ -1,6 +1,6 @@
 import { createStore, applyMiddleware, combineReducers } from 'redux';
 import {thunk} from 'redux-thunk';
-import { authReducer } from './Auth/Reducer';
+import { authReducer } from './auth/Reducer';
 
 // Kết hợp tất cả reducers
 const rootReducer = combineReducers({
