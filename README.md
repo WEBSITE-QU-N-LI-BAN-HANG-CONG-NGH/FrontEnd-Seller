@@ -99,7 +99,7 @@ Dự án được cấu trúc một cách logic để dễ dàng tìm kiếm, ph
 |-- /utils            # Các hàm tiện ích (format, validators, jwtHelper...)
 |-- App.jsx           # Component App chính, xử lý routing
 |-- main.jsx          # Điểm vào của ứng dụng
-
+```
 
 ## ✨ Tính Năng Nổi Bật
 
@@ -120,4 +120,3 @@ Dự án được cấu trúc một cách logic để dễ dàng tìm kiếm, ph
   - Cập nhật thông tin cá nhân của người bán.
   - Quản lý thông tin công khai của cửa hàng: tên, logo, mô tả, website.
   - Chức năng đổi mật khẩu an toàn.
-```
