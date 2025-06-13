@@ -46,7 +46,9 @@ Sử dụng `npm` hoặc `yarn` để cài đặt các gói cần thiết từ t
 
 ```bash
 npm install
+```
 # hoặc
+```bash
 yarn install
 ```
 
