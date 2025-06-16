@@ -14,8 +14,8 @@ const useSeller = () => {
         setLoading(true);
         try {
             const response = await sellerService.getProfile();
-            setProfile(response.data.data);
-            return response.data.data;
+            setProfile(response.data);
+            return response.data;
         } catch (err) {
             setError(err.response?.data?.message || 'Không thể lấy thông tin người bán');
             throw err;
@@ -29,8 +29,8 @@ const useSeller = () => {
         setLoading(true);
         try {
             const response = await sellerService.getShopInfo();
-            setShopInfo(response.data.data);
-            return response.data.data;
+            setShopInfo(response.data);
+            return response.data;
         } catch (err) {
             setError(err.response?.data?.message || 'Không thể lấy thông tin cửa hàng');
             throw err;
@@ -44,8 +44,8 @@ const useSeller = () => {
         setLoading(true);
         try {
             const response = await sellerService.updateProfile(profileData);
-            setProfile(response.data.data);
-            return response.data.data;
+            setProfile(response.data);
+            return response.data;
         } catch (err) {
             setError(err.response?.data?.message || 'Cập nhật thông tin thất bại');
             throw err;
@@ -59,8 +59,8 @@ const useSeller = () => {
         setLoading(true);
         try {
             const response = await sellerService.updateShopInfo(shopData);
-            setShopInfo(response.data.data);
-            return response.data.data;
+            setShopInfo(response.data);
+            return response.data;
         } catch (err) {
             setError(err.response?.data?.message || 'Cập nhật thông tin cửa hàng thất bại');
             throw err;
@@ -74,8 +74,8 @@ const useSeller = () => {
         setLoading(true);
         try {
             const response = await sellerService.getVerificationStatus();
-            setVerificationStatus(response.data.data);
-            return response.data.data;
+            setVerificationStatus(response.data);
+            return response.data;
         } catch (err) {
             setError(err.response?.data?.message || 'Không thể lấy trạng thái xác minh');
             throw err;
@@ -88,7 +88,7 @@ const useSeller = () => {
     const checkSellerRole = useCallback(async () => {
         try {
             const response = await sellerService.verifySellerRole();
-            return response.data.data.isSeller;
+            return response.data.isSeller;
         } catch (err) {
             console.error('Lỗi kiểm tra quyền seller:', err);
             return false;

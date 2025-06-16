@@ -37,8 +37,8 @@ const useProduct = () => {
     const fetchCategories = useCallback(async () => {
         try {
             const response = await productService.getSellerCategories();
-            setCategories(response.data.data);
-            return response.data.data;
+            setCategories(response.data);
+            return response.data;
         } catch (err) {
             console.error('Error fetching categories:', err);
             return { topLevel: [], secondLevel: {} };
@@ -62,7 +62,7 @@ const useProduct = () => {
                 status: filtersToUse.status
             });
 
-            const data = response.data.data;
+            const data = response.data;
             setProducts(data.products || []);
 
             const paginationData = data.pagination;
@@ -91,7 +91,7 @@ const useProduct = () => {
         setLoading(true);
         try {
             const response = await productService.getProductById(productId);
-            return response.data.data;
+            return response.data;
         } catch (err) {
             setError(err.response?.data?.message || 'Không thể lấy thông tin sản phẩm');
             throw err;
@@ -150,8 +150,8 @@ const useProduct = () => {
         setLoading(true);
         try {
             const response = await productService.getProductDetail(productId);
-            setProduct(response.data.data);
-            return response.data.data;
+            setProduct(response.data);
+            return response.data;
         } catch (err) {
             setError(err.response?.data?.message || 'Không thể lấy thông tin sản phẩm');
             throw err;
@@ -167,7 +167,7 @@ const useProduct = () => {
             const response = await productService.createProduct(productData);
             // Refresh current page after creating
             await fetchProducts(0, pagination.pageSize); // Go to first page to see new product
-            return response.data.data;
+            return response.data;
         } catch (err) {
             setError(err.response?.data?.message || 'Không thể tạo sản phẩm');
             throw err;
@@ -183,7 +183,7 @@ const useProduct = () => {
             const response = await productService.updateProduct(productId, productData);
             // Refresh current page after updating
             await fetchProducts(pagination.currentPage, pagination.pageSize);
-            return response.data.data;
+            return response.data;
         } catch (err) {
             setError(err.response?.data?.message || 'Không thể cập nhật sản phẩm');
             throw err;
@@ -218,7 +218,7 @@ const useProduct = () => {
         setLoading(true);
         try {
             const response = await productService.uploadProductImage(productId, imageFile);
-            return response.data.data;
+            return response.data;
         } catch (err) {
             setError(err.response?.data?.message || 'Không thể tải lên hình ảnh');
             throw err;
@@ -232,7 +232,7 @@ const useProduct = () => {
         setLoading(true);
         try {
             const response = await productService.getProductStats();
-            return response.data.data;
+            return response.data;
         } catch (err) {
             setError(err.response?.data?.message || 'Không thể lấy thống kê sản phẩm');
             throw err;

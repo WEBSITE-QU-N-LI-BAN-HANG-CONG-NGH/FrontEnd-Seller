@@ -1,4 +1,3 @@
-// Profile.jsx - Address field removed
 import { useState, useEffect } from "react";
 import { AlertCircle, Camera, Lock, Mail, Phone, Save, User } from "lucide-react";
 import "../../styles/profile/profile.css";
@@ -15,13 +14,10 @@ function Profile() {
     const [isUploading, setIsUploading] = useState(false);
     const [isChangingPassword, setIsChangingPassword] = useState(false);
     const [formData, setFormData] = useState({
-        // Personal information
         firstName: "",
         lastName: "",
         email: "",
         phone: "",
-
-        // Shop information
         shopName: "",
         logo: "",
         description: "",
@@ -41,28 +37,29 @@ function Profile() {
         resetState
     } = useSeller();
 
-    // Fetch profile and shop data when component mounts
     useEffect(() => {
         const fetchData = async () => {
             try {
-                const profileData = await fetchProfile();
-                const shopData = await fetchShopInfo();
-
-                // Update form data with clean mapping
-                setFormData({
-                    // Personal information
-                    firstName: profileData.firstName || "",
-                    lastName: profileData.lastName || "",
-                    email: profileData.email || "",
-                    phone: profileData.phone || "",
-
-                    // Shop information
-                    shopName: shopData.shopName || `${profileData.firstName} ${profileData.lastName} Shop`,
-                    logo: shopData.logo || profileData.imageUrl || "",
-                    description: shopData.description || `Cửa hàng của ${profileData.firstName} ${profileData.lastName}`,
-                    website: shopData.website || "",
-                    businessType: shopData.businessType || "Cá nhân"
-                });
+                // Sử dụng Promise.all để tải song song
+                const [profileData, shopData] = await Promise.all([
+                    fetchProfile(),
+                    fetchShopInfo()
+                ]);
+                
+                // SỬA LỖI: Chỉ cập nhật state khi cả hai API đều trả về dữ liệu
+                if (profileData && shopData) {
+                    setFormData({
+                        firstName: profileData.firstName || "",
+                        lastName: profileData.lastName || "",
+                        email: profileData.email || "",
+                        phone: profileData.phone || "",
+                        shopName: shopData.shopName || `${profileData.firstName || ''} ${profileData.lastName || ''} Shop`.trim(),
+                        logo: shopData.logo || profileData.imageUrl || "",
+                        description: shopData.description || `Cửa hàng của ${profileData.firstName || ''} ${profileData.lastName || ''}`.trim(),
+                        website: shopData.website || "",
+                        businessType: shopData.businessType || "Cá nhân"
+                    });
+                }
             } catch (err) {
                 console.error("Lỗi khi lấy thông tin profile:", err);
             }
@@ -74,156 +71,86 @@ function Profile() {
     // Handle input changes
     const handleChange = (e) => {
         const { name, value } = e.target;
-        setFormData(prev => ({
-            ...prev,
-            [name]: value
-        }));
-
-        // Clear errors when user types again
+        setFormData(prev => ({ ...prev, [name]: value }));
         if (formErrors[name]) {
-            setFormErrors(prev => ({
-                ...prev,
-                [name]: null
-            }));
+            setFormErrors(prev => ({ ...prev, [name]: null }));
         }
     };
 
-    // Validate form before submission
     const validateForm = () => {
         const errors = {};
-
-        // Check email (though it's disabled, keep validation)
         if (formData.email && !isValidEmail(formData.email)) {
             errors.email = "Email không hợp lệ";
         }
-
-        // Check phone number
         if (formData.phone && !isValidPhoneNumber(formData.phone)) {
             errors.phone = "Số điện thoại không hợp lệ";
         }
-
         setFormErrors(errors);
         return Object.keys(errors).length === 0;
     };
 
-    // Handle save information
     const handleSave = async () => {
-        if (!validateForm()) {
-            return;
-        }
-
+        if (!validateForm()) return;
         try {
-            // Update personal profile
             await updateProfile({
                 firstName: formData.firstName,
                 lastName: formData.lastName,
                 phone: formData.phone
             });
-
-            // Update shop information
             await updateShopInfo({
                 shopName: formData.shopName,
                 description: formData.description,
                 website: formData.website,
                 businessType: formData.businessType,
-                phone: formData.phone // Use same phone for shop
+                phone: formData.phone
             });
-
             setIsEditing(false);
-            console.log('Cập nhật thông tin thành công');
-
         } catch (err) {
-            console.error("Lỗi khi cập nhật thông tin:", err);
-            setFormErrors({
-                ...formErrors,
-                submit: "Có lỗi xảy ra khi cập nhật thông tin. Vui lòng thử lại sau."
-            });
+            setFormErrors({ ...formErrors, submit: "Lỗi khi cập nhật thông tin." });
         }
     };
 
-    // Handle logo upload
     const handleLogoUpload = async (e) => {
         const file = e.target.files[0];
         if (!file) return;
-
         try {
             setIsUploading(true);
             const response = await sellerService.uploadAvatar(file);
-
-            setFormData(prev => ({
-                ...prev,
-                logo: response.data.data.imageUrl
-            }));
-
-            console.log('Upload avatar thành công');
+            setFormData(prev => ({ ...prev, logo: response.data.imageUrl }));
         } catch (error) {
-            console.error('Lỗi khi upload avatar:', error);
-            setFormErrors(prev => ({
-                ...prev,
-                logo: 'Không thể upload avatar. Vui lòng thử lại.'
-            }));
+            setFormErrors(prev => ({ ...prev, logo: 'Không thể upload avatar.' }));
         } finally {
             setIsUploading(false);
         }
     };
 
-    // Handle password change
-    const handleChangePassword = async () => {
+const handleChangePassword = async () => {
         const currentPassword = document.getElementById('current-password').value;
         const newPassword = document.getElementById('new-password').value;
         const confirmPassword = document.getElementById('confirm-password').value;
 
-        // Validate passwords
         if (!currentPassword || !newPassword || !confirmPassword) {
-            setFormErrors(prev => ({
-                ...prev,
-                password: 'Vui lòng điền đầy đủ thông tin'
-            }));
+            setFormErrors(prev => ({ ...prev, password: 'Vui lòng điền đầy đủ thông tin' }));
             return;
         }
-
         if (newPassword !== confirmPassword) {
-            setFormErrors(prev => ({
-                ...prev,
-                password: 'Xác nhận mật khẩu không khớp'
-            }));
+            setFormErrors(prev => ({ ...prev, password: 'Xác nhận mật khẩu không khớp' }));
             return;
         }
-
         if (newPassword.length < 6) {
-            setFormErrors(prev => ({
-                ...prev,
-                password: 'Mật khẩu mới phải có ít nhất 6 ký tự'
-            }));
+            setFormErrors(prev => ({ ...prev, password: 'Mật khẩu mới phải có ít nhất 6 ký tự' }));
             return;
         }
 
         try {
             setIsChangingPassword(true);
-            await sellerService.changePassword({
-                currentPassword,
-                newPassword,
-                confirmPassword
-            });
-
-            // Reset form
+            await sellerService.changePassword({ currentPassword, newPassword, confirmPassword });
             document.getElementById('current-password').value = '';
             document.getElementById('new-password').value = '';
             document.getElementById('confirm-password').value = '';
-
-            // Clear any previous errors
-            setFormErrors(prev => ({
-                ...prev,
-                password: null
-            }));
-
-            console.log('Đổi mật khẩu thành công');
+            setFormErrors(prev => ({ ...prev, password: null }));
         } catch (error) {
-            console.error('Lỗi khi đổi mật khẩu:', error);
-            setFormErrors(prev => ({
-                ...prev,
-                password: error.response?.data?.message || 'Đổi mật khẩu thất bại'
-            }));
+            setFormErrors(prev => ({ ...prev, password: error.response?.data?.message || 'Đổi mật khẩu thất bại' }));
         } finally {
             setIsChangingPassword(false);
         }

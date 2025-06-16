@@ -18,8 +18,8 @@ const useDashboard = () => {
         setLoading(true);
         try {
             const response = await dashboardService.getDashboardOverview();
-            setOverview(response.data.data);
-            return response.data.data;
+            setOverview(response.data);
+            return response.data;
         } catch (err) {
             setError(err.response?.data?.message || 'Không thể lấy dữ liệu tổng quan');
             throw err;
@@ -32,8 +32,8 @@ const useDashboard = () => {
         setLoading(true);
         try {
             const response = await dashboardService.getMonthlyRevenue();
-            setMonthlyRevenue(response.data.data);
-            return response.data.data;
+            setMonthlyRevenue(response.data);
+            return response.data;
         } catch (err) {
             setError(err.response?.data?.message || 'Không thể lấy dữ liệu doanh thu hàng tháng');
             throw err;
@@ -46,8 +46,8 @@ const useDashboard = () => {
         setLoading(true);
         try {
             const response = await dashboardService.getOrderStats();
-            setOrderStats(response.data.data);
-            return response.data.data;
+            setOrderStats(response.data);
+            return response.data;
         } catch (err) {
             setError(err.response?.data?.message || 'Không thể lấy thống kê đơn hàng');
             throw err;
@@ -60,8 +60,8 @@ const useDashboard = () => {
         setLoading(true);
         try {
             const response = await dashboardService.getProductStats();
-            setProductStats(response.data.data);
-            return response.data.data;
+            setProductStats(response.data);
+            return response.data;
         } catch (err) {
             setError(err.response?.data?.message || 'Không thể lấy thống kê sản phẩm');
             throw err;
@@ -75,8 +75,8 @@ const useDashboard = () => {
         setLoading(true);
         try {
             const response = await dashboardService.getDailyRevenue();
-            setDailyRevenue(response.data.data);
-            return response.data.data;
+            setDailyRevenue(response.data);
+            return response.data;
         } catch (err) {
             setError(err.response?.data?.message || 'Không thể lấy dữ liệu doanh thu theo ngày');
             throw err;
@@ -89,8 +89,8 @@ const useDashboard = () => {
         setLoading(true);
         try {
             const response = await dashboardService.getCategoryRevenue();
-            setCategoryRevenue(response.data.data);
-            return response.data.data;
+            setCategoryRevenue(response.data);
+            return response.data;
         } catch (err) {
             setError(err.response?.data?.message || 'Không thể lấy dữ liệu doanh thu theo danh mục');
             throw err;

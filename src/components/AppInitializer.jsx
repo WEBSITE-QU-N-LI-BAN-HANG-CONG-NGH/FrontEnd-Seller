@@ -2,7 +2,7 @@
 import { useEffect, useState } from 'react';
 import { useDispatch } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
-import { loginSuccess, getUser } from '../State/Auth/Action';
+import { loginSuccess, getUser } from '../state/auth/Action';
 import sellerService from '../services/sellerService';
 import LoadingSpinner from './common/LoadingSpinner';
 
