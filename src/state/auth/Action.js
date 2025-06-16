@@ -1,8 +1,12 @@
 import axios from 'axios';
 import { SET_USER, LOGOUT, LOGIN_SUCCESS, LOGIN_FAILURE, LOGIN_REQUEST } from "./ActionType";
 
+const BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
+
+const urlCustomer = import.meta.env.VITE_CUSTOMER_URL || 'http://localhost:5173';
+
 // API config
-const API_URL = 'http://localhost:8080/api/v1'; // Điều chỉnh theo URL API của bạn
+const API_URL = `${BACKEND_URL}/api/v1`; // Điều chỉnh theo URL API của bạn
 
 // Action để thiết lập thông tin người dùng đã đăng nhập
 export const loginSuccess = (token) => {
@@ -46,5 +50,5 @@ export const logout = () => (dispatch) => {
         type: LOGOUT
     });
     // Chuyển hướng về ứng dụng customer
-    window.location.href = 'http://localhost:5173/';
+    window.location.href = urlCustomer;
 };

@@ -1,13 +1,15 @@
 // src/hooks/useAuth.js
 import { useState, useEffect, useCallback } from 'react';
-import { useNavigate } from 'react-router-dom';
+// import { useNavigate } from 'react-router-dom';
 import api, { fetchWithRetry } from '../config/Api.js';
+
+const urlCustomer = import.meta.env.VITE_CUSTOMER_URL || 'http://localhost:5173';
 
 const useAuth = () => {
     const [user, setUser] = useState(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
-    const navigate = useNavigate();
+    // const navigate = useNavigate();
 
     useEffect(() => {
         const params = new URLSearchParams(window.location.search);
@@ -139,7 +141,7 @@ const useAuth = () => {
 
             setTimeout(() => {
                 console.log('Before redirect - cookies:', document.cookie);
-                window.location.href = 'http://localhost:5173';
+                window.location.href = urlCustomer;
             }, 2000);
         }
     }, []);

@@ -6,6 +6,8 @@ import { loginSuccess, getUser } from '../State/Auth/Action';
 import sellerService from '../services/sellerService';
 import LoadingSpinner from './common/LoadingSpinner';
 
+const urlCustomer = import.meta.env.VITE_CUSTOMER_URL || 'http://localhost:5173';
+
 const AppInitializer = ({ children }) => {
     const dispatch = useDispatch();
     const navigate = useNavigate();
@@ -116,7 +118,7 @@ const AppInitializer = ({ children }) => {
             <div style="padding: 20px; font-family: monospace;">
                 <h2>Debug Mode</h2>
                 <p>Mở Console (F12) để xem logs chi tiết.</p>
-                <button onclick="window.location.href='http://localhost:5173'">
+                <button onclick="window.location.href=${urlCustomer}">
                     Quay về trang đăng nhập
                 </button>
             </div>
@@ -126,7 +128,7 @@ const AppInitializer = ({ children }) => {
 
             // Nếu chọn chuyển hướng
             console.log('Thực hiện chuyển hướng đến trang đăng nhập customer (5173)');
-            window.location.href = 'http://localhost:5173';
+            window.location.href = urlCustomer;
         }
 
         checkSellerAuth();

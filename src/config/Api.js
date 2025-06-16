@@ -1,7 +1,11 @@
 // src/config/Api.js
 import axios from 'axios';
 
-const API_URL = 'http://localhost:8080/api/v1';
+const BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
+
+const urlCustomer = import.meta.env.VITE_CUSTOMER_URL || 'http://localhost:5173';
+
+const API_URL = `${BACKEND_URL}/api/v1`;
 
 // Tạo một instance axios với các cấu hình mặc định
 const api = axios.create({
@@ -41,7 +45,7 @@ api.interceptors.response.use(
             localStorage.removeItem('jwt'); // Not 'accessToken'
 
             if (window.location.href.includes('localhost:5174')) {
-                window.location.href = 'http://localhost:5173';
+                window.location.href = urlCustomer;
             }
         }
         return Promise.reject(error);

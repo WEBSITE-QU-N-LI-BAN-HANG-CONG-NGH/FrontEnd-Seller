@@ -1,7 +1,9 @@
 
-import { useEffect, useState } from 'react';
+import { useEffect} from 'react';
 import useAuth from '../../hooks/useAuth';
 import LoadingSpinner from './LoadingSpinner';
+
+const urlCustomer = import.meta.env.VITE_CUSTOMER_URL || 'http://localhost:5173';
 
 const PrivateRoute = ({ children }) => {
     const { user, loading } = useAuth();
@@ -10,7 +12,7 @@ const PrivateRoute = ({ children }) => {
         // Only redirect after loading is complete and no user found
         if (!loading && !user) {
             console.log('No authenticated user, redirecting to customer login');
-            window.location.href = 'http://localhost:5173';
+            window.location.href = urlCustomer;
         }
     }, [user, loading]);
 

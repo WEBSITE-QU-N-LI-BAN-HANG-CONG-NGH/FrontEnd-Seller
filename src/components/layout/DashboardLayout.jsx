@@ -7,11 +7,13 @@ import "../../styles/layout/layout.css";
 import useAuth from '../../hooks/useAuth';
 import api from "../../config/Api.js";
 
+const urlCustomer = import.meta.env.VITE_CUSTOMER_URL || 'http://localhost:5173';
+
 function DashboardLayout({ children }) {
     const location = useLocation();
     const navigate = useNavigate();
     const [isMobileNavOpen, setIsMobileNavOpen] = useState(false);
-    const { user, logout, loading } = useAuth();
+    const { user, loading } = useAuth();
 
     // Chuyển hướng đến trang đăng nhập nếu chưa đăng nhập
     useEffect(() => {
@@ -64,7 +66,7 @@ function DashboardLayout({ children }) {
             sessionStorage.clear();
 
             // Redirect to customer app homepage (not login page)
-            window.location.href = 'http://localhost:5173';
+            window.location.href = urlCustomer;
         }
     };
 
