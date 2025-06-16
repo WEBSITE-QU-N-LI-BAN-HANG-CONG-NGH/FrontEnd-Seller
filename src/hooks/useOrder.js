@@ -29,7 +29,7 @@ const useOrder = () => {
         setLoading(true);
         try {
             const response = await orderService.getSellerOrders(params);
-            const { orders, pagination: paginationData } = response.data;
+            const { orders, pagination: paginationData } = response.data.data;
 
             setOrders(orders);
             setPagination(paginationData);
@@ -89,8 +89,8 @@ const useOrder = () => {
         setLoading(true);
         try {
             const response = await orderService.getOrderDetail(orderId);
-            setOrder(response.data);
-            return response.data;
+            setOrder(response.data.data);
+            return response.data.data;
         } catch (err) {
             setError(err.response?.data?.message || 'Không thể lấy chi tiết đơn hàng');
             throw err;
@@ -116,7 +116,7 @@ const useOrder = () => {
             if (order && order.id === orderId) {
                 setOrder({ ...order, orderStatus: status });
             }
-            return response.data;
+            return response.data.data;
         } catch (err) {
             setError(err.response?.data?.message || 'Không thể cập nhật trạng thái đơn hàng');
             throw err;
@@ -130,7 +130,7 @@ const useOrder = () => {
         setLoading(true);
         try {
             const response = await orderService.getOrderStatistics(period);
-            return response.data;
+            return response.data.data;
         } catch (err) {
             setError(err.response?.data?.message || 'Không thể lấy thống kê đơn hàng');
             throw err;

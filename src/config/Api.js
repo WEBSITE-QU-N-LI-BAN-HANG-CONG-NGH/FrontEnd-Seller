@@ -1,7 +1,7 @@
 // src/config/Api.js
 import axios from 'axios';
 
-const BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
+const BACKEND_URL = import.meta.env.VITE_API_URL;
 
 const urlCustomer = import.meta.env.VITE_CUSTOMER_URL || 'http://localhost:5173';
 
